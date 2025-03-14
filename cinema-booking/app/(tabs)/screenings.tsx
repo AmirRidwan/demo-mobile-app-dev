@@ -12,7 +12,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { Screening } from "@/app/types";
+import { Screening } from "@/types";
 
 export default function ScreeningsScreen() {
   const [date, setDate] = useState(new Date());
@@ -30,7 +30,7 @@ export default function ScreeningsScreen() {
       setLoading(true);
       const formattedDate = date.toISOString().split("T")[0];
       const response = await fetch(
-        `http://localhost:3000/api/screenings?date=${formattedDate}`
+        `http://localhost:3000/screenings?date=${formattedDate}`
       );
       const data = await response.json();
       setScreenings(data);

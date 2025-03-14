@@ -7,6 +7,8 @@ export interface Movie {
   genre: string;
   rating: number;
   duration: string;
+  trailerUrl: string;
+  casts: Array<string>;
 }
 
 // Define the Seat interface
@@ -35,3 +37,11 @@ export interface Booking {
   seats: string[];
   bookingTime: number;
 }
+
+export interface Review {
+  id: string;
+  username: string;
+  rating: number;
+  comment: string;
+}
+

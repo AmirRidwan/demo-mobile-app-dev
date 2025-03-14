@@ -4,7 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Booking } from "@/app/types";
+import { Booking } from "@/types";
 
 export default function BookingsScreen() {
   const [bookings, setBookings] = useState<Booking[]>([]);
