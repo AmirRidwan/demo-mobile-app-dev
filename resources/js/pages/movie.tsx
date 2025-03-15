@@ -13,6 +13,42 @@ import AppLayout from '@/layouts/app-layout';
 import { Link } from '@inertiajs/react';
 import ReactPlayer from 'react-player/youtube';
 
+export type MovieDetailsType = {
+    id: number;
+    poster_path: string;
+    original_title: string;
+    runtime: number;
+    vote_average: number;
+    vote_count: number;
+    overview: string;
+    genres: {
+        id: string;
+        name: string;
+    }[];
+};
+
+export type TrailerType = {
+    key: string;
+};
+
+export type CastsType = {
+    name: string;
+};
+
+export type DirectorType = {
+    name: string;
+};
+
+export type WriterType = {
+    name: string;
+};
+
+export type ReviewType = {
+    id: string;
+    author: string;
+    content: string;
+    author_details: { rating: number };
+};
 export default function Movie({
     details,
     trailer,
@@ -21,8 +57,15 @@ export default function Movie({
     director,
     writer,
     reviews,
+}: {
+    details: MovieDetailsType;
+    trailer: TrailerType;
+    release_date: string;
+    casts: CastsType[];
+    director: DirectorType;
+    writer: WriterType;
+    reviews: ReviewType[];
 }) {
-    console.log(reviews);
     return (
         <>
             <Button

@@ -1,7 +1,7 @@
 import { AppBottomNav } from '@/components/app-bottom-nav';
-import { AppHeader } from '@/components/app-header';
 import MovieThumbnail from '@/components/movie-thumbnail';
 import SectionTitle from '@/components/text/section-title';
+import { WelcomeHeader } from '@/components/welcome-header';
 import AppLayout from '@/layouts/app-layout';
 import { type SharedData } from '@/types';
 import { Head, usePage } from '@inertiajs/react';
@@ -37,7 +37,7 @@ export default function Welcome({
                 />
             </Head>
             <AppLayout>
-                <AppHeader />
+                <WelcomeHeader />
 
                 <section>
                     <SectionTitle viewMore={true}>New Releases</SectionTitle>

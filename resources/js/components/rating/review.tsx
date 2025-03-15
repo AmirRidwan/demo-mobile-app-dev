@@ -1,3 +1,4 @@
+import { ReviewType } from '@/pages/movie';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import Rating from './rating';
 
@@ -6,7 +7,7 @@ export default function Review({
     className,
     ...props
 }: {
-    review: { author: string; content: string; author_details: { rating: number } };
+    review: ReviewType;
     className?: string;
 }) {
     return (
