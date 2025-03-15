@@ -1,0 +1,152 @@
+{
+	"newReleases": [
+		{
+			"id": 1,
+			"title": "Venom: Let There Be Carnage",
+			"genre": ["Action", "Adventure", "Sci-Fi"],
+			"release": "October 2021",
+			"rating": { "star": 4.5, "totalRatings": 28 },
+			"runtime": { "hour": 1, "minute": 37 },
+			"details": {
+				"sypnosis": "Eddie Brock is still struggling to co-exist with the shape-shifting extraterrestrial Venom...",
+				"cast": "Tom Hardy, Woody Harrelson, Michelle Williams, Naomi Harris",
+				"director": "Andy Serkis",
+				"writers": "Kelly Marcel, Tom Hardy"
+			},
+			"trailer": "https://www.youtube.com/watch?v=USAsr2i4jiQ",
+			"poster": "https://upload.wikimedia.org/wikipedia/en/a/a7/Venom_Let_There_Be_Carnage_poster.jpg"
+		},
+		{
+			"id": 2,
+			"title": "The Marvels",
+			"genre": ["Action", "Adventure", "Fantasy"],
+			"release": "November 2023",
+			"rating": { "star": 3.8, "totalRatings": 42 },
+			"runtime": { "hour": 1, "minute": 45 },
+			"details": {
+				"sypnosis": "Carol Danvers, Monica Rambeau, and Kamala Khan must team up to save the universe from a new threat.",
+				"cast": "Brie Larson, Teyonah Parris, Iman Vellani",
+				"director": "Nia DaCosta",
+				"writers": "Nia DaCosta, Megan McDonnell"
+			},
+			"trailer": "https://www.youtube.com/watch?v=iuk77TjvfmE",
+			"poster": "https://upload.wikimedia.org/wikipedia/en/7/7a/The_Marvels_poster.jpg"
+		},
+		{
+			"id": 3,
+			"title": "Oppenheimer",
+			"genre": ["Biography", "Drama", "History"],
+			"release": "July 2023",
+			"rating": { "star": 4.9, "totalRatings": 124 },
+			"runtime": { "hour": 3, "minute": 0 },
+			"details": {
+				"sypnosis": "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb.",
+				"cast": "Cillian Murphy, Emily Blunt, Matt Damon, Robert Downey Jr.",
+				"director": "Christopher Nolan",
+				"writers": "Christopher Nolan"
+			},
+			"trailer": "https://www.youtube.com/watch?v=uYPbbksJxIg",
+			"poster": "https://upload.wikimedia.org/wikipedia/en/4/4a/Oppenheimer_%28film%29.jpg"
+		}
+	],
+	"popular": [
+		{
+			"id": 4,
+			"title": "Avengers: Endgame",
+			"genre": ["Action", "Adventure", "Drama"],
+			"release": "April 2019",
+			"rating": { "star": 4.8, "totalRatings": 300 },
+			"runtime": { "hour": 3, "minute": 2 },
+			"details": {
+				"sypnosis": "After the devastating events of Infinity War, the Avengers assemble once more in order to reverse Thanos' actions.",
+				"cast": "Robert Downey Jr., Chris Evans, Scarlett Johansson",
+				"director": "Anthony and Joe Russo",
+				"writers": "Christopher Markus, Stephen McFeely"
+			},
+			"trailer": "https://www.youtube.com/watch?v=TcMBFSGVi1c",
+			"poster": "https://upload.wikimedia.org/wikipedia/en/0/0d/Avengers_Endgame_poster.jpg"
+		},
+		{
+			"id": 5,
+			"title": "John Wick: Chapter 4",
+			"genre": ["Action", "Thriller", "Crime"],
+			"release": "March 2023",
+			"rating": { "star": 4.6, "totalRatings": 190 },
+			"runtime": { "hour": 2, "minute": 49 },
+			"details": {
+				"sypnosis": "John Wick uncovers a path to defeating The High Table. But before he can earn his freedom...",
+				"cast": "Keanu Reeves, Donnie Yen, Bill Skarsgård",
+				"director": "Chad Stahelski",
+				"writers": "Shay Hatten, Michael Finch"
+			},
+			"trailer": "https://www.youtube.com/watch?v=qEVUtrk8_B4",
+			"poster": "https://upload.wikimedia.org/wikipedia/en/d/d0/John_Wick_-_Chapter_4_promotional_poster.jpg"
+		},
+		{
+			"id": 6,
+			"title": "Spider-Man: No Way Home",
+			"genre": ["Action", "Adventure", "Fantasy"],
+			"release": "December 2021",
+			"rating": { "star": 4.7, "totalRatings": 256 },
+			"runtime": { "hour": 2, "minute": 28 },
+			"details": {
+				"sypnosis": "Peter Parker seeks Doctor Strange’s help when his identity is revealed to the world, causing the multiverse to open.",
+				"cast": "Tom Holland, Zendaya, Benedict Cumberbatch",
+				"director": "Jon Watts",
+				"writers": "Chris McKenna, Erik Sommers"
+			},
+			"trailer": "https://www.youtube.com/watch?v=JfVOs4VSpmA",
+			"poster": "https://upload.wikimedia.org/wikipedia/en/0/00/Spider-Man_No_Way_Home_poster.jpg"
+		}
+	],
+	"recommended": [
+		{
+			"id": 7,
+			"title": "Dune: Part One",
+			"genre": ["Adventure", "Drama", "Sci-Fi"],
+			"release": "October 2021",
+			"rating": { "star": 4.4, "totalRatings": 130 },
+			"runtime": { "hour": 2, "minute": 35 },
+			"details": {
+				"sypnosis": "A noble family becomes embroiled in a war for control over the galaxy’s most valuable asset.",
+				"cast": "Timothée Chalamet, Rebecca Ferguson, Zendaya",
+				"director": "Denis Villeneuve",
+				"writers": "Jon Spaihts, Denis Villeneuve, Eric Roth"
+			},
+			"trailer": "https://www.youtube.com/watch?v=n9xhJrPXop4",
+			"poster": "https://upload.wikimedia.org/wikipedia/en/8/8e/Dune_%282021_film%29.jpg"
+		},
+		{
+			"id": 8,
+			"title": "The Batman",
+			"genre": ["Action", "Crime", "Drama"],
+			"release": "March 2022",
+			"rating": { "star": 4.3, "totalRatings": 110 },
+			"runtime": { "hour": 2, "minute": 56 },
+			"details": {
+				"sypnosis": "Batman ventures into Gotham City's underworld when a sadistic killer leaves behind a trail of clues.",
+				"cast": "Robert Pattinson, Zoë Kravitz, Paul Dano",
+				"director": "Matt Reeves",
+				"writers": "Matt Reeves, Peter Craig"
+			},
+			"trailer": "https://www.youtube.com/watch?v=mqqft2x_Aa4",
+			"poster": "https://upload.wikimedia.org/wikipedia/en/f/ff/The_Batman_%28film%29_poster.jpg"
+		},
+		{
+			"id": 9,
+			"title": "Everything Everywhere All at Once",
+			"genre": ["Action", "Comedy", "Drama"],
+			"release": "March 2022",
+			"rating": { "star": 4.6, "totalRatings": 145 },
+			"runtime": { "hour": 2, "minute": 19 },
+			"details": {
+				"sypnosis": "An aging Chinese immigrant is swept up in a wild adventure where she alone can save the multiverse.",
+				"cast": "Michelle Yeoh, Stephanie Hsu, Ke Huy Quan",
+				"director": "Daniel Kwan, Daniel Scheinert",
+				"writers": "Daniel Kwan, Daniel Scheinert"
+			},
+			"trailer": "https://www.youtube.com/watch?v=wxN1T1uxQ2g",
+			"poster": "https://upload.wikimedia.org/wikipedia/en/1/1e/Everything_Everywhere_All_at_Once.jpg"
+		}
+	]
+}
