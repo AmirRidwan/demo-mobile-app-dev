@@ -1,0 +1,102 @@
+[
+    {
+        "id": "S-001",
+        "state": "Selangor",
+        "locations": [
+            {
+                "id": "SL-001",
+                "cinema": "Sunway Pyramid"
+            },
+            {
+                "id": "SL-002",
+                "cinema": "1 Utama"
+            },
+            {
+                "id": "SL-003",
+                "cinema": "IOI City Mall"
+            },
+            {
+                "id": "SL-004",
+                "cinema": "Pavilion Bukit Jalil"
+            }
+        ]
+    },
+    {
+        "id": "S-002",
+        "state": "Kuala Lumpur",
+        "locations": [
+            {
+                "id": "KL-001",
+                "cinema": "Pavilion KL"
+            },
+            {
+                "id": "KL-002",
+                "cinema": "Mid Valley Megamall"
+            },
+            {
+                "id": "KL-003",
+                "cinema": "KLCC"
+            },
+            {
+                "id": "KL-004",
+                "cinema": "The Gardens Mall"
+            }
+        ]
+    },
+    {
+        "id": "S-003",
+        "state": "Penang",
+        "locations": [
+            {
+                "id": "PN-001",
+                "cinema": "Gurney Plaza"
+            },
+            {
+                "id": "PN-002",
+                "cinema": "Queensbay Mall"
+            }
+        ]
+    },
+    {
+        "id": "S-004",
+        "state": "Johor",
+        "locations": [
+            {
+                "id": "JH-001",
+                "cinema": "Johor Bahru City Square"
+            },
+            {
+                "id": "JH-002",
+                "cinema": "Paradigm Mall"
+            }
+        ]
+    },
+    {
+        "id": "S-005",
+        "state": "Sabah",
+        "locations": [
+            {
+                "id": "SB-001",
+                "cinema": "Suria Sabah"
+            },
+            {
+                "id": "SB-002",
+                "cinema": "Imago Shopping Mall"
+            }
+        ]
+    },
+    {
+        "id": "S-006",
+        "state": "Sarawak",
+        "locations": [
+            {
+                "id": "SW-001",
+                "cinema": "VivaCity Megamall"
+            },
+            {
+                "id": "SW-002",
+                "cinema": "Plaza Merdeka"
+            }
+        ]
+    }
+]

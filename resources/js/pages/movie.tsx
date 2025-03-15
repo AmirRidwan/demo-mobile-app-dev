@@ -1,3 +1,4 @@
+import BackButton from '@/components/button/back-btn';
 import Rating from '@/components/rating/rating';
 import Review from '@/components/rating/review';
 import Star from '@/components/rating/star';
@@ -32,6 +33,7 @@ export type TrailerType = {
 };
 
 export type CastsType = {
+    id: number;
     name: string;
 };
 
@@ -68,29 +70,7 @@ export default function Movie({
 }) {
     return (
         <>
-            <Button
-                size="icon"
-                className="absolute top-2 left-2 z-50"
-                onClick={() => {
-                    history.back();
-                    return false;
-                }}
-            >
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="size-4"
-                >
-                    <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
-                    />
-                </svg>
-            </Button>
+            <BackButton variant="default" className="top-7 left-4" />
 
             <AspectRatio ratio={16 / 9}>
                 <ReactPlayer
@@ -190,7 +170,9 @@ export default function Movie({
                                     <SectionTitle viewMore={false}>Cast</SectionTitle>
                                     <div className="space-y-1 space-x-1">
                                         {casts.map((c) => (
-                                            <Badge variant="outline">{c.name}</Badge>
+                                            <Badge key={c.id} variant="outline">
+                                                {c.name}
+                                            </Badge>
                                         ))}
                                     </div>
                                 </div>
@@ -295,7 +277,7 @@ export default function Movie({
 
             <AppBottomNavLayout className="p-3">
                 <Button asChild className="w-full">
-                    <Link href="/book-ticket">Book Ticket</Link>
+                    <Link href={route('book_ticket', details.id)}>Book Ticket</Link>
                 </Button>
             </AppBottomNavLayout>
         </>
