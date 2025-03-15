@@ -21,7 +21,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import API_CONFIG from "@/utils/api";
 
-import { Movie, Screening, Review } from "@/types";
+import { Movie, Review } from "@/types";
 
 export default function MovieDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -29,7 +29,6 @@ export default function MovieDetailScreen() {
   const [activeTab, setActiveTab] = useState<"details" | "reviews">("details");
 
   const [movie, setMovie] = useState<Movie | null>(null);
-  const [screenings, setScreenings] = useState<Screening[]>([]);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -40,6 +39,7 @@ export default function MovieDetailScreen() {
 
   const fetchData = useCallback(
     async (endpoint: string) => {
+      console.log(isConnected);
       if (!isConnected) {
         setError("No internet connection. Please check your network settings.");
         setLoading(false);
@@ -74,15 +74,6 @@ export default function MovieDetailScreen() {
     }
   }, [fetchData, movieId]);
 
-  const fetchScreenings = useCallback(async () => {
-    try {
-      const data = await fetchData(`/screenings?movieId=${movieId}`);
-      setScreenings(data);
-    } catch (error) {
-      console.error("Error fetching screenings:", error);
-    }
-  }, [fetchData, movieId]);
-
   const fetchReviews = useCallback(async () => {
     try {
       const data = await fetchData(`/reviews?movieId=${movieId}`);
@@ -97,7 +88,7 @@ export default function MovieDetailScreen() {
       try {
         setLoading(true);
         await fetchMovie();
-        await Promise.allSettled([fetchScreenings(), fetchReviews()]);
+        await Promise.allSettled([fetchReviews()]);
       } catch (error) {
         console.error("Error loading data:", error);
       } finally {
@@ -108,9 +99,9 @@ export default function MovieDetailScreen() {
     if (movieId) {
       loadData();
     }
-  }, [movieId, fetchMovie, fetchScreenings, fetchReviews]);
+  }, [movieId, fetchMovie, fetchReviews]);
 
-  const handleScreeningPress = (screeningId: number) => {
+  const handleScreeningPress = (movieId: number) => {
     if (!isConnected) {
       Alert.alert(
         "No Internet Connection",
@@ -118,13 +109,13 @@ export default function MovieDetailScreen() {
       );
       return;
     }
-    router.push(`/booking/${screeningId}`);
+    router.push(`/booking/${movieId}`);
   };
 
   const handleRetry = () => {
     setLoading(true);
     setError(null);
-    Promise.all([fetchMovie(), fetchScreenings(), fetchReviews()]).finally(() =>
+    Promise.all([fetchMovie(), fetchReviews()]).finally(() =>
       setLoading(false)
     );
   };
@@ -137,44 +128,50 @@ export default function MovieDetailScreen() {
         <ThemedText style={styles.description}>{movie?.description}</ThemedText>
       </ThemedView>
 
-      <ThemedView style={styles.screeningsContainer}>
-        <ThemedText type="title">Screenings</ThemedText>
+      <TouchableOpacity
+        style={[styles.bookTicketButton, !isConnected && styles.disabledButton]}
+        onPress={() => {
+          if (!isConnected) {
+            Alert.alert(
+              "No Internet Connection",
+              "You need to be online to book tickets."
+            );
+            return;
+          }
 
-        {screenings ? (
-          screenings.map((screening) => (
-            <TouchableOpacity
-              key={screening.id}
-              style={[
-                styles.screeningCard,
-                !isConnected && styles.disabledCard,
-              ]}
-              onPress={() => handleScreeningPress(screening.id)}
-              activeOpacity={isConnected ? 0.8 : 1}
-              disabled={!isConnected}
-            >
-              <ThemedView style={styles.screeningInfo}>
-                <ThemedText type="defaultSemiBold">{screening.date}</ThemedText>
-                <ThemedText>
-                  {screening.time} • {screening.hall}
-                </ThemedText>
-              </ThemedView>
-              <ThemedText style={styles.availableSeats}>
-                {
-                  screening.availableSeats.filter((seat) => !seat.isBooked)
-                    .length
-                }{" "}
-                seats available
-              </ThemedText>
-            </TouchableOpacity>
-          ))
-        ) : (
-          <ThemedText>
-            {!isConnected
-              ? "Cannot load screenings while offline"
-              : "No screenings available"}
-          </ThemedText>
-        )}
-      </ThemedView>
+          try {
+            router.push(`/booking/${movieId}`);
+          } catch (error) {
+            console.error("Navigation error:", error);
+            Alert.alert("Error", "Failed to navigate to booking page.", [
+              {
+                text: "Cancel",
+                style: "cancel",
+              },
+              {
+                text: "Retry",
+                onPress: () => {
+                  try {
+                    router.push(`/booking/${movieId}`);
+                  } catch (retryError) {
+                    console.error("Retry navigation error:", retryError);
+                    Alert.alert(
+                      "Error",
+                      "Could not navigate to booking page. Please try again later."
+                    );
+                  }
+                },
+              },
+            ]);
+          }
+        }}
+        disabled={!isConnected}
+      >
+        <ThemedText type="defaultSemiBold" style={styles.bookTicketText}>
+          Book a Ticket
+        </ThemedText>
+      </TouchableOpacity>
+
       <ThemedView style={styles.castsContainer}>
         <ThemedText type="title">Cast</ThemedText>
         <ThemedView style={styles.castGrid}>
@@ -191,7 +188,7 @@ export default function MovieDetailScreen() {
     </>
   );
 
-  const extractYouTubeId = (url) => {
+  const extractYouTubeId = (url: string): string | null => {
     if (!url) return null;
     const regExp =
       /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
@@ -275,7 +272,7 @@ export default function MovieDetailScreen() {
             <YoutubePlayer
               height={Dimensions.get("window").width * 0.5625}
               width={Dimensions.get("window").width}
-              videoId={extractYouTubeId(movie.trailerUrl)}
+              videoId={extractYouTubeId(movie.trailerUrl) || ""}
               play={true}
               onChangeState={(state) => {
                 if (state === "ended") setTrailerPlaying(false);
@@ -332,22 +329,6 @@ export default function MovieDetailScreen() {
             </ThemedText>
           </ThemedView>
         </ThemedView>
-        <TouchableOpacity
-          style={[
-            styles.bookNowButton,
-            (!isConnected || !screenings) && styles.disabledButton,
-          ]}
-          onPress={() => {
-            if (screenings.length > 0) {
-              handleScreeningPress(screenings[0].id);
-            }
-          }}
-          disabled={!isConnected || !screenings}
-        >
-          <ThemedText type="defaultSemiBold" style={styles.bookNowText}>
-            {!isConnected ? "Offline - Cannot Book" : "Book Tickets Now"}
-          </ThemedText>
-        </TouchableOpacity>
 
         {/* Tab Navigation */}
         <ThemedView style={styles.tabContainer}>
@@ -501,6 +482,18 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: "center",
     marginVertical: 16,
+  },
+  bookTicketButton: {
+    backgroundColor: "#E63946",
+    padding: 16,
+    borderRadius: 12,
+    alignItems: "center",
+    marginVertical: 16,
+  },
+  bookTicketText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
   },
   disabledButton: {
     backgroundColor: "#ccc",

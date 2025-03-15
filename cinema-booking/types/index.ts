@@ -8,7 +8,7 @@ export interface Movie {
   rating: number;
   duration: string;
   trailerUrl: string;
-  casts: Array<string>;
+  casts: Array<Cast>;
 }
 
 // Define the Seat interface
@@ -36,6 +36,10 @@ export interface Booking {
   screening: Screening;
   seats: string[];
   bookingTime: number;
+  subtotal: number;
+  fnbItems?: BookingFnBItem[];
+  fnbTotal?: number;
+  grandTotal?: number;
 }
 
 export interface Review {
@@ -43,5 +47,24 @@ export interface Review {
   username: string;
   rating: number;
   comment: string;
+}
+
+export interface FnBItem {
+  id: string;
+  name: string;
+  price: number;
+  image: string;
+  category: string;
+  description: string;
+}
+export interface BookingFnBItem {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
+export interface Cast {
+  name: string;
+  character: string;
 }
 

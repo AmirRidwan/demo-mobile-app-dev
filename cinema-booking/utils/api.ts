@@ -2,7 +2,6 @@ import { Platform } from "react-native";
 import Constants from "expo-constants";
 
 export function getApiBaseUrl() {
-  console.log(Constants);
   // For physical devices using Expo Go
   if (__DEV__) {
     // Android Emulator - special IP for localhost
@@ -31,6 +30,8 @@ const API_CONFIG = {
     SCREENINGS: "/screenings",
     REVIEWS: "/reviews",
     BOOKINGS: "/bookings",
+    FNB_ITEMS: "/fnbItems",
+    PAYMENTS: "/payments",
   },
 };
 
