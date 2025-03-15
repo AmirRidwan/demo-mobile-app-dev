@@ -1,7 +1,10 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, SafeAreaView} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useNavigation } from '@react-navigation/native';
+import { io } from 'socket.io-client';
+
 
 const getNext7Days = () => {
 	const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -26,49 +29,96 @@ const getNext7Days = () => {
 	};
 };
 
+
+
+
 export default TicketBooking = () => {
+	const navigation = useNavigation();
+
+
 	const [selectedLocation, setSelectedLocation] = useState();
 	const [selectedCinema, setSelectedCinema] = useState();
 	
 	const [selectedDate, setSelectedDate] = useState(null);
 	const [selectedTime, setSelectedTime] = useState(null);
 
-	const [selectedSeats, setSelectedSeats] = useState(new Set());
+
+	const [movieId, setMovieId] = useState("movie123")
 	
 	const next7Days = getNext7Days()
 
 	const times = ['9:20AM', '11:40AM', '1:20PM', '3:30PM', '5:40PM', '7:30PM', '9:20PM'];
-
 	const seatRows = 'ABCDEFGH'.split('');
 
-	// TEMP SHOW
-	const seatStatus = {
-		B4: 2,
-		B5: 2,
-		C6: 2,
-		D7: 2,
-		E3: 2,
-		F4: 2
-	}
+	const [selectedSeats, setSelectedSeats] = useState(new Set());
+	const [seatStatus, setSeatStatus] = useState({})
+	const [socket, setSocket] = useState(null);
+	
+	useEffect(() => {
 
+		// Connect to Socket.IO server (using 10.0.2.2 for Android emulator)
+		const newSocket = io('http://10.0.2.2:3000', {
+			transports: ['websocket'],
+			timeout: 5000,
+		});
+	
+		setSocket(newSocket);
+	
+		newSocket.on('connect', () => {
+			console.log('✅ Connected to server');
+			newSocket.emit('join_movie', movieId);
+		});
+	
+		newSocket.on('seat_status', (seats) => {
+			console.log('🎟️ Seat Status Update:', seats);
+			setSeatStatus({...seats});
+		});
+	
+		newSocket.on('disconnect', () => {
+			console.log('❌ Disconnected from server');
+		});
+	
+		newSocket.on('connect_error', (err) => {
+			console.log('⚠️ Connection Error:', err.message);
+		});
+	
+		return () => {
+			newSocket.disconnect();
+		};
+	}, []);
 
 	const handleSeatPress = (seatId) => {
+		if (seatStatus[seatId] === 2) return;
+	
 		setSelectedSeats((prevSelected) => {
 			const updated = new Set(prevSelected);
+			
 			if (updated.has(seatId)) {
+				// DESELECT
 				updated.delete(seatId);
+				socket.emit('deselect_seat', {movieId, seatId} );
 			} else {
+				// SELECT
 				updated.add(seatId);
+				socket.emit('select_seat', {movieId, seatId} );
 			}
 			return updated;
 		});
 	};
 
+	const cancelSeatSelection = () => {
+		selectedSeats.forEach(seatId => {
+			socket.emit('deselect_seat', { movieId, seatId });
+		});
+		navigation.goBack()
+	}
+	
 	const seatPrice = 2500;
+
 
 	return (
 		<SafeAreaView style={TicketBookingStyles.container}>	
-			<Pressable style={TicketBookingStyles.headerButton} onPress={() => navigation.goBack()}>
+			<Pressable style={TicketBookingStyles.headerButton} onPress={() => cancelSeatSelection}>
 				<Icon name="arrow-back" size={24} color="white" />
 			</Pressable>	
 			<Text style={TicketBookingStyles.title}>Ticket Booking</Text>
@@ -90,8 +140,7 @@ export default TicketBooking = () => {
 				<View style={TicketBookingStyles.dropdownWrapper}>
 					<Picker selectedValue={selectedLocation} style={TicketBookingStyles.picker} onValueChange={itemValue => setSelectedLocation(itemValue)}>
 						<Picker.Item label="Select Location" value={null} />
-						{/* <Picker.Item label="Lagos" value="lagos" />
-						<Picker.Item label="Abuja" value="abuja" /> */}
+						<Picker.Item label="Kuala Lumpur" value="kl" />
 					</Picker>
 				</View>
 
@@ -100,8 +149,7 @@ export default TicketBooking = () => {
 				<View style={TicketBookingStyles.dropdownWrapper}>
 					<Picker selectedValue={selectedCinema} style={TicketBookingStyles.picker} onValueChange={itemValue => setSelectedCinema(itemValue)}>
 						<Picker.Item label="Select Cinema Hall" value={null} />
-						<Picker.Item label="Silverbird" value="silverbird" />
-						<Picker.Item label="Genesis" value="genesis" />
+						<Picker.Item label="Pavillion" value="pavillion" />
 					</Picker>
 				</View>
 
@@ -177,10 +225,7 @@ export default TicketBooking = () => {
 							return (
 								<Pressable
 									key={seatId}
-									style={[
-										TicketBookingStyles.seat,
-										isSelected && TicketBookingStyles.seatSelected
-									]}
+									style={[TicketBookingStyles.seat, ((isSelected || seatStatus[seatId]) && TicketBookingStyles.seatSelected)]}
 									onPress={() => handleSeatPress(seatId)}
 								/>
 							);
@@ -190,7 +235,8 @@ export default TicketBooking = () => {
 					</View>
 				))}
 
-				<View style={TicketBookingStyles.bottomPanel}>
+				{/* BOOKING INFO */}
+				<View style={TicketBookingStyles.bookingInfoContainer}>
 					<View style={TicketBookingStyles.summaryBox}>
 						<Text style={TicketBookingStyles.summaryText}>SEAT</Text>
 						<Text style={TicketBookingStyles.selectedSeats}>{Array.from(selectedSeats).join(', ')}</Text>
@@ -198,20 +244,23 @@ export default TicketBooking = () => {
 					<View style={TicketBookingStyles.summaryBox}>
 					<Text style={TicketBookingStyles.summaryText}>SUB-TOTAL</Text>
 					<Text style={TicketBookingStyles.subtotal}>
-						₦{selectedSeats.length * seatPrice}
+						₦ {(selectedSeats.size * seatPrice) || 0}
 					</Text>
 					</View>
 				</View>
 
-				<View style={TicketBookingStyles.actionButtons}>
-					<Pressable style={TicketBookingStyles.cancelButton}>
-					<Text style={TicketBookingStyles.cancelText}>Cancel</Text>
-					</Pressable>
-					<Pressable style={TicketBookingStyles.proceedButton}>
-					<Text style={TicketBookingStyles.proceedText}>Proceed</Text>
-					</Pressable>
-				</View>
+
 			</ScrollView>
+
+			{/* CANCEL AND PROCEED */}
+			<View style={TicketBookingStyles.actionButtons}>
+				<Pressable style={TicketBookingStyles.cancelButton} onPress={() =>cancelSeatSelection}>
+					<Text style={TicketBookingStyles.cancelText}>Cancel</Text>
+				</Pressable>
+				<Pressable style={TicketBookingStyles.proceedButton}  onPress={() => console.log("proceed")}>
+					<Text style={TicketBookingStyles.proceedText}>Proceed</Text>
+				</Pressable>
+			</View>
 		</SafeAreaView>
 	);
 };
@@ -222,7 +271,7 @@ const TicketBookingStyles = StyleSheet.create({
 		backgroundColor: 'black', 
 	},
 	scrollContainer: {
-		padding: 20
+		padding: 20,
 	},
 	headerButton: {
 		position: 'absolute',
@@ -309,7 +358,7 @@ const TicketBookingStyles = StyleSheet.create({
 		textAlign: 'center',
 	},
 	selectedBox: {
-		backgroundColor: '#00f',
+		backgroundColor: 'gray',
 	},
 
 	seatSelectorLabel: {
@@ -361,34 +410,43 @@ const TicketBookingStyles = StyleSheet.create({
 	},
 	seatRow: {
 		flexDirection: 'row',
-		justifyContent: 'center',
+		justifyContent: 'space-between',
 		alignItems: 'center',
-		marginVertical: 4,
+		marginVertical: 7,
 		gap: 5
 	},
-	// seat: {
-	// 	width: 20,
-	// 	height: 20,
-	// 	margin: 4,
-	// 	borderRadius: 4,
-	// },
-	rowLabel: {color: '#888', width: 16, textAlign: 'center'},
-	bottomPanel: {
+	rowLabel: {
+		color: '#888', 
+		textAlign: 'center'
+	},
+	bookingInfoContainer: {
 		backgroundColor: '#111',
 		borderRadius: 8,
 		padding: 16,
 		marginTop: 16,
+		marginBottom: 40,
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 	},
 	summaryBox: {},
-	summaryText: {color: '#AAA', fontSize: 12},
-	selectedSeats: {color: 'white', marginTop: 4},
-	subtotal: {color: 'white', marginTop: 4},
+	summaryText: {
+		color: '#AAA', 
+		fontSize: 12
+	},
+	selectedSeats: {
+		color: 'white', 
+		marginTop: 4
+	},
+	subtotal: {
+		color: 'white',
+		marginTop: 4
+	},
 	actionButtons: {
+		paddingHorizontal: 20,
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		marginTop: 20,
+		marginBottom: 30
 	},
 	cancelButton: {
 		flex: 1,
@@ -398,13 +456,19 @@ const TicketBookingStyles = StyleSheet.create({
 		borderRadius: 6,
 		alignItems: 'center',
 	},
-	cancelText: {color: 'black', fontWeight: 'bold'},
+	cancelText: {
+		color: 'black', 
+		fontWeight: 'bold'
+	},
 	proceedButton: {
 		flex: 1,
-		backgroundColor: '#555',
+		backgroundColor: 'lightgray',
 		padding: 12,
 		borderRadius: 6,
 		alignItems: 'center',
 	},
-	proceedText: {color: 'white', fontWeight: 'bold'},
+	proceedText: {
+		color: 'white', 
+		fontWeight: 'bold'
+	},
 });
