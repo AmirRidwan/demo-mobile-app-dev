@@ -2,69 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TextInput, Image, ScrollView, TouchableOpacity, StatusBar, Pressable, } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-const MovieCard = ({title, subtitle, image}) => (
-	<TouchableOpacity style={styles.movieCard}>
-		<View style={styles.movieImageContainer}>
-		<View style={styles.movieImagePlaceholder} />
-		</View>
-		<View style={styles.movieTitleContainer}>
-		<Text style={styles.movieTitle} numberOfLines={1}>
-			{title}
-		</Text>
-		<Text style={styles.movieSubtitle} numberOfLines={1}>
-			{subtitle}
-		</Text>
-		</View>
-		<TouchableOpacity style={styles.movieOptionsButton}>
-		<Icon name="ellipsis-vertical" size={16} color="#666" />
-		</TouchableOpacity>
-	</TouchableOpacity>
-);
-
-const MovieSection = ({title, viewAllAction}) => (
-	<View style={styles.sectionContainer}>
-		<View style={styles.sectionHeader}>
-		<Text style={styles.sectionTitle}>{title}</Text>
-		<TouchableOpacity onPress={viewAllAction}>
-			<Text style={styles.viewAllText}>view all</Text>
-		</TouchableOpacity>
-		</View>
-		<View style={styles.movieRow}>
-		<MovieCard
-			title={
-			title === 'New Releases'
-				? 'Venom: Let there be carnage'
-				: title === 'Popular in cinemas'
-				? 'Shang-Chi: Legend of the ten rings'
-				: 'Recommended Movie 1'
-			}
-			subtitle={
-			title === 'New Releases'
-				? ''
-				: title === 'Popular in cinemas'
-				? ''
-				: ''
-			}
-		/>
-		<MovieCard
-			title={
-			title === 'New Releases'
-				? '007: No Time To Die'
-				: title === 'Popular in cinemas'
-				? 'Ciao giallo (The egg)'
-				: 'Recommended Movie 2'
-			}
-			subtitle={
-			title === 'New Releases'
-				? ''
-				: title === 'Popular in cinemas'
-				? ''
-				: ''
-			}
-		/>
-		</View>
-	</View>
-);
+// COMPONENTS
+import MovieCard from '../components/home/movieCard';
+import MovieList from '../components/home/movieList';
 
 
 export default Home = () => { 
@@ -82,11 +22,13 @@ export default Home = () => {
 				<View style={styles.userInfo}>
 					<View style={styles.profilePic} />
 					<View>
-						<Text style={styles.greeting}>{user}</Text>
+						<Text style={styles.greeting}>Hello, &nbsp;
+							<Text style={styles.user}>{user}</Text>
+						</Text>
 						<Text style={styles.subGreeting}>Want to go see a movie? Get your ticket today</Text>
 					</View>
 				</View>
-				<Pressable onPress={() => console.log('Pressed')}>
+				<Pressable onPressed={() => console.log('Pressed')}>
 					<Icon name="notifications-outline" size={24} color="#FFF" />
 				</Pressable>
 			</View>
@@ -102,22 +44,18 @@ export default Home = () => {
 
 			{/* Movie Listings */}
 			<ScrollView style={styles.content}>
-				<MovieSection
-					title="New Releases"
-					viewAllAction={() => console.log('View all new releases')}
-				/>
-				<MovieSection
-					title="Popular in cinemas"
-					viewAllAction={() => console.log('View all popular')}
-				/>
-				<MovieSection
-					title="Recommended for you"
-					viewAllAction={() => console.log('View all recommended')}
-				/>
+				<MovieList title="New Releases" viewAllAction={() => console.log('View all new releases')}>
+					<MovieCard title="Venom: Let there be carnage" />
+				</MovieList>
+				<MovieList title="Popular in cinemas" viewAllAction={() => console.log('View all popular')}>
+				</MovieList>
+				<MovieList title="Recommended for you" viewAllAction={() => console.log('View all recommended')}>
+				</MovieList>
+
 			</ScrollView>
 
 			{/* Bottom Navigation */}
-			<View style={styles.bottomNav}>
+			{/* <View style={styles.bottomNav}>
 				<TouchableOpacity style={styles.navItem}>
 				<Icon name="home" type="Ionicons" size={24} color="#FFF" />
 				</TouchableOpacity>
@@ -130,7 +68,7 @@ export default Home = () => {
 				<TouchableOpacity style={styles.navItem}>
 				<Icon name="person-outline" type="Ionicons" size={24} color="#FFF" />
 				</TouchableOpacity>
-			</View>
+			</View> */}
 		</SafeAreaView>
 	);
 };
@@ -159,6 +97,10 @@ const styles = StyleSheet.create({
 		marginRight: 12,
 	},
 	greeting: {
+		color: '#999',
+		fontSize: 16,
+	},
+	user: {
 		color: '#FFF',
 		fontSize: 16,
 		fontWeight: '600',
@@ -199,63 +141,8 @@ const styles = StyleSheet.create({
 	content: {
 		flex: 1,
 	},
-	sectionContainer: {
-		marginBottom: 16,
-	},
-	sectionHeader: {
-		flexDirection: 'row',
-		justifyContent: 'space-between',
-		alignItems: 'center',
-		paddingHorizontal: 16,
-		marginBottom: 8,
-	},
-	sectionTitle: {
-		color: '#FFF',
-		fontSize: 16,
-		fontWeight: '600',
-	},
-	viewAllText: {
-		color: '#999',
-		fontSize: 12,
-	},
-	movieRow: {
-		flexDirection: 'row',
-		paddingHorizontal: 16,
-	},
-	movieCard: {
-		width: 150,
-		marginRight: 12,
-	},
-	movieImageContainer: {
-		width: '100%',
-		height: 200,
-		borderRadius: 8,
-		overflow: 'hidden',
-		backgroundColor: '#222',
-	},
-	movieImagePlaceholder: {
-		flex: 1,
-		backgroundColor: '#333',
-	},
-	movieTitleContainer: {
-		paddingVertical: 4,
-		flex: 1,
-	},
-	movieTitle: {
-		color: '#FFF',
-		fontSize: 12,
-		fontWeight: '600',
-	},
-	movieSubtitle: {
-		color: '#999',
-		fontSize: 10,
-	},
-	movieOptionsButton: {
-		position: 'absolute',
-		right: 0,
-		bottom: 0,
-		padding: 4,
-	},
+
+
 	bottomNav: {
 		flexDirection: 'row',
 		height: 60,
