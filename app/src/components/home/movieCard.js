@@ -3,11 +3,11 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 
 
-export default MovieCard = ({id, title, image}) => {
+export default MovieCard = ({movieData, title, image}) => {
 	const navigation = useNavigation();
 	return (
 		<View style={MovieCardStyles.cardContainer}>
-			<Pressable onPress={() => navigation.navigate("MovieDetails", { id })} style={MovieCardStyles.movieCard}>
+			<Pressable onPress={() => navigation.navigate("MovieDetails", { movieData })} style={MovieCardStyles.movieCard}>
 				<View style={MovieCardStyles.movieImageContainer}>
 					<Image source={{ uri: image }} style={MovieCardStyles.movieImage} resizeMode="cover"/>
 				</View>

@@ -70,13 +70,13 @@ export default Home = () => {
 			{/* Movie Listings */}
 			<ScrollView style={styles.content}>
 				<MovieList title="New Releases" viewAllAction={() => console.log('View all new releases')}>
-					{ movieList.newReleases.map((movie) =>  (<MovieCard key={`new${movie.id}`} id={movie.id} title={movie.title} image={movie.poster} />))}
+					{ movieList.newReleases.map((movie) =>  (<MovieCard key={`new${movie.id}`} movieData={movie} title={movie.title} image={movie.poster} />))}
 				</MovieList>
 				<MovieList title="Popular in cinemas" viewAllAction={() => console.log('View all popular')}>
-					{ movieList.popular.map((movie) => (<MovieCard key={`pop${movie.id}`} id={movie.id} title={movie.title} image={movie.poster} />))}
+					{ movieList.popular.map((movie) => (<MovieCard key={`pop${movie.id}`} movieData={movie} title={movie.title} image={movie.poster} />))}
 				</MovieList>
 				<MovieList title="Recommended for you" viewAllAction={() => console.log('View all recommended')}>
-					{ movieList.recommended.map((movie) => (<MovieCard key={`rec${movie.id}`} id={movie.id} title={movie.title} image={movie.poster} />))}
+					{ movieList.recommended.map((movie) => (<MovieCard key={`rec${movie.id}`} movieData={movie} title={movie.title} image={movie.poster} />))}
 				</MovieList>
 
 			</ScrollView>

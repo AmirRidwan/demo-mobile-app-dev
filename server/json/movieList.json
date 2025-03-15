@@ -6,6 +6,7 @@
 			"genre": ["Action", "Adventure", "Sci-Fi"],
 			"release": "October 2021",
 			"rating": { "star": 4.5, "totalRatings": 28 },
+			"age_rating": "18+",
 			"runtime": { "hour": 1, "minute": 37 },
 			"details": {
 				"sypnosis": "Eddie Brock is still struggling to co-exist with the shape-shifting extraterrestrial Venom...",
@@ -22,6 +23,7 @@
 			"genre": ["Action", "Adventure", "Fantasy"],
 			"release": "November 2023",
 			"rating": { "star": 3.8, "totalRatings": 42 },
+			"age_rating": "13+",
 			"runtime": { "hour": 1, "minute": 45 },
 			"details": {
 				"sypnosis": "Carol Danvers, Monica Rambeau, and Kamala Khan must team up to save the universe from a new threat.",
@@ -38,6 +40,7 @@
 			"genre": ["Biography", "Drama", "History"],
 			"release": "July 2023",
 			"rating": { "star": 4.9, "totalRatings": 124 },
+			"age_rating": "13+",
 			"runtime": { "hour": 3, "minute": 0 },
 			"details": {
 				"sypnosis": "The story of American scientist J. Robert Oppenheimer and his role in the development of the atomic bomb.",
@@ -56,6 +59,7 @@
 			"genre": ["Action", "Adventure", "Drama"],
 			"release": "April 2019",
 			"rating": { "star": 4.8, "totalRatings": 300 },
+			"age_rating": "13+",
 			"runtime": { "hour": 3, "minute": 2 },
 			"details": {
 				"sypnosis": "After the devastating events of Infinity War, the Avengers assemble once more in order to reverse Thanos' actions.",
@@ -72,6 +76,7 @@
 			"genre": ["Action", "Thriller", "Crime"],
 			"release": "March 2023",
 			"rating": { "star": 4.6, "totalRatings": 190 },
+			"age_rating": "18+",
 			"runtime": { "hour": 2, "minute": 49 },
 			"details": {
 				"sypnosis": "John Wick uncovers a path to defeating The High Table. But before he can earn his freedom...",
@@ -88,6 +93,7 @@
 			"genre": ["Action", "Adventure", "Fantasy"],
 			"release": "December 2021",
 			"rating": { "star": 4.7, "totalRatings": 256 },
+			"age_rating": "13+",
 			"runtime": { "hour": 2, "minute": 28 },
 			"details": {
 				"sypnosis": "Peter Parker seeks Doctor Strange’s help when his identity is revealed to the world, causing the multiverse to open.",
@@ -106,6 +112,7 @@
 			"genre": ["Adventure", "Drama", "Sci-Fi"],
 			"release": "October 2021",
 			"rating": { "star": 4.4, "totalRatings": 130 },
+			"age_rating": "13+",
 			"runtime": { "hour": 2, "minute": 35 },
 			"details": {
 				"sypnosis": "A noble family becomes embroiled in a war for control over the galaxy’s most valuable asset.",
@@ -122,6 +129,7 @@
 			"genre": ["Action", "Crime", "Drama"],
 			"release": "March 2022",
 			"rating": { "star": 4.3, "totalRatings": 110 },
+			"age_rating": "13+",
 			"runtime": { "hour": 2, "minute": 56 },
 			"details": {
 				"sypnosis": "Batman ventures into Gotham City's underworld when a sadistic killer leaves behind a trail of clues.",
@@ -138,6 +146,7 @@
 			"genre": ["Action", "Comedy", "Drama"],
 			"release": "March 2022",
 			"rating": { "star": 4.6, "totalRatings": 145 },
+			"age_rating": "13+",
 			"runtime": { "hour": 2, "minute": 19 },
 			"details": {
 				"sypnosis": "An aging Chinese immigrant is swept up in a wild adventure where she alone can save the multiverse.",
