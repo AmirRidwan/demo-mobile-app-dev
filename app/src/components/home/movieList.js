@@ -12,7 +12,9 @@ export default MovieList = ({children, title, viewAllAction}) => {
                 <Text style={MovieListStyles.viewAllText}>View All</Text>
             </TouchableOpacity>
             </View>
-            <View style={MovieListStyles.movieRow}>{ children }</View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={MovieListStyles.movieRow}>
+				{ children }
+			</ScrollView>
         </View>
     );
 }
@@ -39,7 +41,7 @@ const MovieListStyles= StyleSheet.create({
 		fontSize: 12,
 	},
 	movieRow: {
-		flexDirection: 'row',
-		paddingHorizontal: 16,
+		paddingHorizontal: 15,
+		gap: 10
 	},
 })

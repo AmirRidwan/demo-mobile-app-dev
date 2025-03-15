@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TextInput, Image, ScrollView, TouchableOpacity, StatusBar, Pressable, } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Snackbar from 'react-native-snackbar';
 
 // COMPONENTS
 import MovieCard from '../components/home/movieCard';
 import MovieList from '../components/home/movieList';
 
-const apiLink = "http://localhost:3000"
+// const apiLink = "http://localhost:3000"
+const apiLink = "http://10.0.2.2:3000"
 
 
 export default Home = () => { 
@@ -16,16 +18,22 @@ export default Home = () => {
 	useEffect(() => {
 		setUser("Raymond")
 
-		fetch(`${apiLink}/homeMovie`, {
+		fetch(`${apiLink}/movie/movieList`, {
 			method: "GET",
 		})
+		.then((res) => res.json())
 		.then((data) => {
 			setMovieList(data.movies)
-			console.log(data, movieList)
 		})
+		.catch((error) => {
+			console.error("Error fetching movies:", error);
+			Snackbar.show({
+				text: 'An error has occured, please check back later',
+				duration: Snackbar.LENGTH_SHORT,
+			});
+		});
 
-		console.log(movieList, "test")
-	})
+	}, [])
 
 	return (
 		<SafeAreaView style={styles.container}>
@@ -33,7 +41,11 @@ export default Home = () => {
 			{/* HEADER SECTION */}
 			<View style={styles.header}>
 				<View style={styles.userInfo}>
-					<View style={styles.profilePic} />
+					{/* <View style={styles.profilePic} /> */}
+					<Image 
+						style={styles.profilePic}
+						source={{ uri: 'https://media.istockphoto.com/id/1130884625/vector/user-member-vector-icon-for-ui-user-interface-or-profile-face-avatar-app-in-circle-design.jpg?s=612x612&w=0&k=20&c=1ky-gNHiS2iyLsUPQkxAtPBWH1BZt0PKBB1WBtxQJRE='}}
+					/>
 					<View>
 						<Text style={styles.greeting}>Hello, &nbsp;
 							<Text style={styles.user}>{user}</Text>
@@ -58,30 +70,16 @@ export default Home = () => {
 			{/* Movie Listings */}
 			<ScrollView style={styles.content}>
 				<MovieList title="New Releases" viewAllAction={() => console.log('View all new releases')}>
-					<MovieCard title="Venom: Let there be carnage" />
+					{ movieList.newReleases.map((movie) =>  (<MovieCard key={`new${movie.id}`} id={movie.id} title={movie.title} image={movie.poster} />))}
 				</MovieList>
 				<MovieList title="Popular in cinemas" viewAllAction={() => console.log('View all popular')}>
+					{ movieList.popular.map((movie) => (<MovieCard key={`pop${movie.id}`} id={movie.id} title={movie.title} image={movie.poster} />))}
 				</MovieList>
 				<MovieList title="Recommended for you" viewAllAction={() => console.log('View all recommended')}>
+					{ movieList.recommended.map((movie) => (<MovieCard key={`rec${movie.id}`} id={movie.id} title={movie.title} image={movie.poster} />))}
 				</MovieList>
 
 			</ScrollView>
-
-			{/* Bottom Navigation */}
-			{/* <View style={styles.bottomNav}>
-				<TouchableOpacity style={styles.navItem}>
-				<Icon name="home" type="Ionicons" size={24} color="#FFF" />
-				</TouchableOpacity>
-				<TouchableOpacity style={[styles.navItem, styles.activeNavItem]}>
-				<Icon name="film-outline" size={24} color="#FFF" />
-				</TouchableOpacity>
-				<TouchableOpacity style={styles.navItem}>
-				<Icon name="heart-outline" type="Ionicons" size={24} color="#FFF" />
-				</TouchableOpacity>
-				<TouchableOpacity style={styles.navItem}>
-				<Icon name="person-outline" type="Ionicons" size={24} color="#FFF" />
-				</TouchableOpacity>
-			</View> */}
 		</SafeAreaView>
 	);
 };

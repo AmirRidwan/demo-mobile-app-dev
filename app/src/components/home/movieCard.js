@@ -6,10 +6,10 @@ import { useNavigation } from '@react-navigation/native';
 export default MovieCard = ({id, title, image}) => {
 	const navigation = useNavigation();
 	return (
-		<View>
+		<View style={MovieCardStyles.cardContainer}>
 			<Pressable onPress={() => navigation.navigate("MovieDetails", { id })} style={MovieCardStyles.movieCard}>
 				<View style={MovieCardStyles.movieImageContainer}>
-					<View style={MovieCardStyles.movieImagePlaceholder} />
+					<Image source={{ uri: image }} style={MovieCardStyles.movieImage} resizeMode="cover"/>
 				</View>
 			</Pressable>
 			<View style={MovieCardStyles.movieInfoContainer}>
@@ -18,7 +18,7 @@ export default MovieCard = ({id, title, image}) => {
 						{title}
 					</Text>
 				</View>
-				<Pressable onPress={console.log('Movie Options')} style={MovieCardStyles.movieOptionsButton}>
+				<Pressable onPress={() => console.log('Movie Options')} style={MovieCardStyles.movieOptionsButton}>
 					<Icon name="ellipsis-vertical" size={16} color="#666" />
 				</Pressable>
 			</View>
@@ -28,9 +28,11 @@ export default MovieCard = ({id, title, image}) => {
 
 
 const MovieCardStyles = StyleSheet.create({
+	cardContainer: {
+		width: 150,
+	},
     movieCard: {
 		width: 150,
-		marginRight: 12,
 	},
 	movieImageContainer: {
 		width: '100%',
@@ -39,19 +41,21 @@ const MovieCardStyles = StyleSheet.create({
 		overflow: 'hidden',
 		backgroundColor: '#222',
 	},
-	movieImagePlaceholder: {
-		flex: 1,
-		backgroundColor: '#333',
+	movieImage: {
+		width: '100%',
+		height: '100%',
+		borderRadius: 12,
 	},
 	movieInfoContainer: {
-		flexDirection: 'row', // put title + icon in same row
+		flexDirection: 'row',
 		alignItems: 'flex-start',
-		marginTop: 4,
+		justifyContent: 'space-between',
+		marginTop: 5,
 	},
 
 	movieTitleContainer: {
-		flex: 1, // take up available space
-		paddingRight: 8, // some breathing room from the icon
+		flex: 1, 
+		paddingLeft: 5,
 	},
 
 	movieTitle: {

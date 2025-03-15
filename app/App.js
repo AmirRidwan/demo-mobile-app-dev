@@ -50,7 +50,7 @@ const MainTabs = () => {
 					}
 
 					return (
-						<View style={{ alignItems: 'center', justifyContent: 'center' }}>
+						<View style={{ alignItems: 'center', justifyContent: 'center', marginTop: 6 }}>
 							<Icon name={iconName} size={24} color={focused ? '#FFF' : '#666'} />
 							{focused && (
 								<Text style={{ fontSize:9, color: '#FFF', marginTop: 1 }} numberOfLines={1}>
