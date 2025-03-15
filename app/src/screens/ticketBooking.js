@@ -2,7 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, SafeAreaView} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { io } from 'socket.io-client';
 
 
@@ -34,6 +34,8 @@ const getNext7Days = () => {
 
 export default TicketBooking = () => {
 	const navigation = useNavigation();
+	const route = useRoute();
+	const { id } = route.params 
 
 
 	const [selectedLocation, setSelectedLocation] = useState();
@@ -44,9 +46,7 @@ export default TicketBooking = () => {
 
 
 	const [movieId, setMovieId] = useState("movie123")
-	
 	const next7Days = getNext7Days()
-
 	const times = ['9:20AM', '11:40AM', '1:20PM', '3:30PM', '5:40PM', '7:30PM', '9:20PM'];
 	const seatRows = 'ABCDEFGH'.split('');
 
