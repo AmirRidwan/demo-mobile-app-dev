@@ -1,27 +1,14 @@
 import React from 'react';
-import { 
-	View, 
-	Text, 
-	StyleSheet, 
-	SafeAreaView, 
-	TouchableOpacity,
-	ScrollView,
-	StatusBar,
-	Image 
-} from 'react-native';
+import {  View, Text, StyleSheet, SafeAreaView, TouchableOpacity, ScrollView, StatusBar, Image } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-
-const MovieDetailsScreen = () => {
+export default MovieDetails = () => {
 	const navigation = useNavigation();
 	const route = useRoute();
 	const { movieId, title } = route.params || { movieId: '1', title: 'Venom: Let There Be Carnage' };
 
 	return (
-		<SafeAreaView style={styles.container}>
-			<StatusBar barStyle="light-content" />
-			
+		<SafeAreaView style={styles.container}>			
 			{/* Header with back button and fullscreen button */}
 			<View style={styles.header}>
 				<TouchableOpacity 
@@ -31,7 +18,7 @@ const MovieDetailsScreen = () => {
 					<Icon name="arrow-back" size={24} color="#FFF" />
 				</TouchableOpacity>
 				<TouchableOpacity style={styles.headerButton}>
-					<Icon name="expand" size={24} color="#FFF" />
+					<Icon name="resize" size={24} color="#FFF" />
 				</TouchableOpacity>
 			</View>
 			
@@ -48,7 +35,7 @@ const MovieDetailsScreen = () => {
 				</View>
 				
 				<TouchableOpacity style={styles.volumeButton}>
-					<Icon name="volume-medium" size={24} color="#FFF" />
+					<Icon name="volume-mute-outline" size={24} color="#FFF" />
 				</TouchableOpacity>
 			</View>
 			
@@ -122,7 +109,7 @@ const MovieDetailsScreen = () => {
 							<Text style={styles.detailTitle}>Full synopsis</Text>
 							<Icon name="chevron-forward" size={20} color="#999" />
 						</View>
-						<Text style={styles.synopsisPreview} numberOfLines={2}>
+						<Text style={styles.synopsisPreview} numberOfLines={3}>
 							Eddie Brock is still struggling to co-exist with the shape-shifting 
 							extraterrestrial Venom. When deranged serial killer Cletus Kasady also 
 							becomes host to an alien symbiote...
@@ -166,7 +153,7 @@ const MovieDetailsScreen = () => {
 				{/* Book Ticket Button */}
 				<TouchableOpacity 
 					style={styles.bookButton}
-					onPress={() => navigation.navigate('BookTicket', { movieId, title })}
+					onPress={() => navigation.navigate('TicketBooking', { movieId, title })}
 				>
 					<Text style={styles.bookButtonText}>Book Ticket</Text>
 				</TouchableOpacity>
@@ -378,4 +365,3 @@ const styles = StyleSheet.create({
 	},
 });
 
-export default MovieDetailsScreen;
