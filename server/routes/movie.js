@@ -41,8 +41,7 @@ movie.get("/cinemaList", (req, res) => {
 
 movie.get("/movieTimes", (req, res) => {
     try {
-        const date = req.query.date; // Get 'date' from query parameters
-        console.log("Requested date:", date);
+        // const date = req.query.date; // Get 'date' from query parameters
     
         // HARD CODED TIME ASSUMED TO BE IN DB IF IN PRODUCTION
         const time = ['9:20AM', '11:40AM', '1:20PM', '3:30PM', '5:40PM', '7:30PM', '9:20PM'];

@@ -7,16 +7,14 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-// Import screens
+// SCREENS
 import HomeScreen from './src/screens/home';
 import MovieDetails from './src/screens/movieDetails';
 import TicketBooking from './src/screens/ticketBooking'
-// Import other screens as needed
-// import ProfileScreen from './src/screens/profile';
-// import FavoritesScreen from './src/screens/favorites';
-// import TicketsScreen from './src/screens/tickets';
+import BookingSummary from './src/screens/bookingSummary'
+import Payment from './src/screens/payment';
 
-// You'll need to create these placeholder screens or import your actual screens
+// PLACEHOLDER SCREEN FOR TABS
 const ProfileScreen = () => <></>;
 const FavoritesScreen = () => <></>;
 const TicketsScreen = () => <></>;
@@ -69,8 +67,8 @@ const MainTabs = () => {
 		</Tab.Navigator>
 	);
 };
-// Root Navigator
-const App = () => {
+
+export default App = () => {
 	return (
 		<SafeAreaProvider>
 			<NavigationContainer>
@@ -78,6 +76,8 @@ const App = () => {
 					<Stack.Screen name="MainTabs" component={MainTabs} />
 					<Stack.Screen name="MovieDetails" component={MovieDetails} />
 					<Stack.Screen name="TicketBooking" component={TicketBooking} />
+					<Stack.Screen name="BookingSummary" component={BookingSummary} />
+					<Stack.Screen name="Payment" component={Payment} />
 				</Stack.Navigator>
 			</NavigationContainer>
 		</SafeAreaProvider>
@@ -86,5 +86,3 @@ const App = () => {
 
 // Register the app
 AppRegistry.registerComponent('MovieTicketApp', () => App);
-
-export default App;
