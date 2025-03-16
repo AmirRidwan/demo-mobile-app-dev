@@ -43,7 +43,10 @@ const seatsManager = (io) => {
 
 	router.post("/payForSeat", (req, res) => {
 		try {
+			const movieId = req.body.movieId
 			const selectedSeats = req.body.seats
+			const paymentDeatils = req.body.payment
+			const subtotal = req.body.seats
 
 			// BANK API HERE
 			// const makePayment = await fetch("bank_api", {

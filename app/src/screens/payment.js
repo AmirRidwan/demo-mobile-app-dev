@@ -6,21 +6,28 @@ import MaterialIcon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export default Payment = () => {
 	const navigation = useNavigation();
-	
+	const route = useRoute();
+	const { movieId, seats, subtotal } = route.params 
 
-	// const payForMovie = () => {
-	// 	fetch(`${apiLink}/movie/movieTimes?date=${selectedDate}`, {
-	// 		method: "GET",
-	// 	})
-	// 	.then((res) => res.json())
-	// 	.then((data) => {
-	// 		setTimeList(data.time)
-	// 	})
-	// 	.catch((error) => {
-	// 		console.error("Error fetching available time:", error);
-	// 		Snackbar.show({ text: 'An error has occured, please check back later', duration: Snackbar.LENGTH_SHORT,});
-	// 	});
-	// }
+	const payForMovie = () => {
+		fetch(`${apiLink}/seatsManager/payForSeat`, {
+			method: "POST",
+			body: {
+				movieId,
+				seats, 
+				subtotal,
+				payment: {}
+			}
+		})
+		.then((res) => res.json())
+		.then((data) => {
+			setTimeList(data.time)
+		})
+		.catch((error) => {
+			console.error("Error fetching available time:", error);
+			Snackbar.show({ text: 'An error has occured, please check back later', duration: Snackbar.LENGTH_SHORT,});
+		});
+	}
 
 	return (
 		<SafeAreaView style={paymentStyles.container}>
@@ -33,7 +40,7 @@ export default Payment = () => {
 			<View style={paymentStyles.contentContainer}>
 				<Text style={paymentStyles.questionText}>How would you like to make the payment? Kindly select your preferred option</Text>
 
-				<Pressable style={paymentStyles.optionBox}>
+				<Pressable style={paymentStyles.optionBox} onPress={() => navigation.navigate('PaymentSuccess')}>
 					<View style={paymentStyles.iconTextContainer}>
 						<MaterialIcon name="credit-card-outline" size={22} color="white" />
 						<View style={paymentStyles.textContainer}>
@@ -44,7 +51,7 @@ export default Payment = () => {
 					<Icon name="chevron-forward" size={20} color="#999" />
 				</Pressable>
 
-				<Pressable style={paymentStyles.optionBox}>
+				<Pressable style={paymentStyles.optionBox} onPress={() => navigation.navigate('PaymentSuccess')}>
 					<View style={paymentStyles.iconTextContainer}>
 						<MaterialIcon name="bank-transfer" size={22} color="white" />
 						<View style={paymentStyles.textContainer}>
@@ -55,7 +62,7 @@ export default Payment = () => {
 					<Icon name="chevron-forward" size={20} color="#999" />
 				</Pressable>
 
-				<Pressable style={paymentStyles.optionBox}>
+				<Pressable style={paymentStyles.optionBox} onPress={() => navigation.navigate('PaymentSuccess')}>
 					<View style={paymentStyles.iconTextContainer}>
 						<MaterialIcon name="bitcoin" size={22} color="white" />
 						<View style={paymentStyles.textContainer}>
