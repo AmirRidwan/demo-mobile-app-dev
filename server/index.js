@@ -4,7 +4,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
 import { movie } from './routes/movie.js';
-import liveSeatsWebsocket from './routes/liveSeatsWebsocket.js';
+import seatsManager from './routes/seatsManager.js';
 
 
 const app = express();
@@ -19,11 +19,14 @@ const io = new Server(server, {
 	}
 });
 
-// LIVE SEATS DATA WS
-liveSeatsWebsocket(io)
+
 
 // REST API TO GET MOVIE DATA / SHOW TIMES
 app.use("/movie", movie)
+
+// LIVE SEATS DATA WS
+app.use("/seatsManager", seatsManager(io))
+
 
 const PORT = 3000;
 server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

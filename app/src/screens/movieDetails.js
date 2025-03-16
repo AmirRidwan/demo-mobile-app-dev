@@ -141,7 +141,7 @@ export default MovieDetails = () => {
 				{/* Book Ticket Button */}
 				<Pressable 
 					style={styles.bookButton}
-					onPress={() => navigation.navigate('TicketBooking', { id: movieData.id })}
+					onPress={() => navigation.navigate('TicketBooking', { movieData })}
 				>
 					<Text style={styles.bookButtonText}>Book Ticket</Text>
 				</Pressable>

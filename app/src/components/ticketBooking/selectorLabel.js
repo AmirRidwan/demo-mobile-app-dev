@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet } from 'react-native';
 
-const SelectorLabel = ({label}) => {
+export default SelectorLabel = ({label}) => {
     return (
         <View style={SelectorLabelStyles.container}>
             <View style={SelectorLabelStyles.line} />
@@ -28,5 +28,3 @@ const SelectorLabelStyles = StyleSheet.create({
         backgroundColor: '#555'
     }
 })
-
-export default SelectorLabel

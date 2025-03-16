@@ -38,7 +38,7 @@ const apiLink = "http://10.0.2.2:3000"
 export default TicketBooking = () => {
 	const navigation = useNavigation();
 	const route = useRoute();
-	const { id } = route.params 
+	const { movieData } = route.params 
 
 	const [locationList, setLocationList] = useState({})
 	const [cinemaList, setCinemaList] = useState([])
@@ -94,7 +94,7 @@ export default TicketBooking = () => {
 	// CONNECT WEBSOCKET TO GET LIVE SEAT SELECTIONS
 	const getLiveSeatData = (time) => {
 
-		setMovieId(`${id}-${selectedCinema}-${selectedDate.date}-${time}`.toLowerCase().replace(/\s+/g, ''))
+		setMovieId(`${movieData.id}-${selectedCinema}-${selectedDate.date}-${time}`.toLowerCase().replace(/\s+/g, ''))
 		const newSocket = io('http://10.0.2.2:3000', {
 			transports: ['websocket'],
 			timeout: 5000,
@@ -104,7 +104,7 @@ export default TicketBooking = () => {
 	
 		newSocket.on('connect', () => {
 			console.log('Connected to server');
-			newSocket.emit('join_movie', `${id}-${selectedCinema}-${selectedDate.date}-${time}`.toLowerCase().replace(/\s+/g, ''));
+			newSocket.emit('join_movie', `${movieData.id}-${selectedCinema}-${selectedDate.date}-${time}`.toLowerCase().replace(/\s+/g, ''));
 		});
 	
 		newSocket.on('seat_status', (seats) => {
@@ -153,6 +153,8 @@ export default TicketBooking = () => {
 			selectedSeats.forEach(seatId => {
 				socket.emit('deselect_seat', { movieId, seatId });
 			});
+			socket.disconnect()
+			setSocket(null)
 		}
 	}
 	
@@ -363,7 +365,19 @@ export default TicketBooking = () => {
 				<Pressable style={TicketBookingStyles.cancelButton} onPress={() => { cancelSeatSelection(); navigation.goBack() }}>
 					<Text style={TicketBookingStyles.cancelText}>Cancel</Text>
 				</Pressable>
-				<Pressable style={TicketBookingStyles.proceedButton}  onPress={() => console.log("proceed")}>
+				<Pressable 
+					style={TicketBookingStyles.proceedButton} 
+					onPress={() => navigation.navigate('Payment', { movieId, seats: Array.from(selectedSeats), subtotal: seatPrice })}
+					// onPress={() => navigation.navigate('BookingSummary', { 
+					// 	movieData, 
+					// 	movieId, 
+					// 	startTime: selectedTime,
+					// 	date: selectedDate,
+					// 	seats: selectedSeats, 
+					// 	subtotal: seatPrice 
+					// })}
+
+				>
 					<Text style={TicketBookingStyles.proceedText}>Proceed</Text>
 				</Pressable>
 			</View>
