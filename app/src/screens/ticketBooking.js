@@ -4,7 +4,9 @@ import { Picker } from '@react-native-picker/picker';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { io } from 'socket.io-client';
+import Snackbar from 'react-native-snackbar';
 
+import SelectorLabel from '../components/ticketBooking/selectorLabel';
 
 const getNext7Days = () => {
 	const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -30,6 +32,7 @@ const getNext7Days = () => {
 };
 
 
+const apiLink = "http://10.0.2.2:3000"
 
 
 export default TicketBooking = () => {
@@ -37,26 +40,61 @@ export default TicketBooking = () => {
 	const route = useRoute();
 	const { id } = route.params 
 
+	const [locationList, setLocationList] = useState({})
+	const [cinemaList, setCinemaList] = useState([])
+	const [timeList, setTimeList] = useState([])
 
 	const [selectedLocation, setSelectedLocation] = useState();
 	const [selectedCinema, setSelectedCinema] = useState();
-	
 	const [selectedDate, setSelectedDate] = useState(null);
 	const [selectedTime, setSelectedTime] = useState(null);
+	const [selectedSeats, setSelectedSeats] = useState(new Set());
 
 
-	const [movieId, setMovieId] = useState("movie123")
+	const [movieId, setMovieId] = useState("")
+	const [seatPrice, setSeatPrice] = useState(2500);
+
 	const next7Days = getNext7Days()
-	const times = ['9:20AM', '11:40AM', '1:20PM', '3:30PM', '5:40PM', '7:30PM', '9:20PM'];
 	const seatRows = 'ABCDEFGH'.split('');
 
-	const [selectedSeats, setSelectedSeats] = useState(new Set());
 	const [seatStatus, setSeatStatus] = useState({})
 	const [socket, setSocket] = useState(null);
-	
-	useEffect(() => {
 
-		// Connect to Socket.IO server (using 10.0.2.2 for Android emulator)
+	// GET ALL CINEMA LOCATIONS (STATE AND CINEMA PLACE)
+	const getCinemaLocations = () => {
+		fetch(`${apiLink}/movie/cinemaList`, {
+			method: "GET",
+		})
+		.then((res) => res.json())
+		.then((data) => {
+			setLocationList(data.locations)
+			setCinemaList(Object.values(data.locations).flat())
+		})
+		.catch((error) => {
+			console.error("Error fetching locations:", error);
+			Snackbar.show({ text: 'An error has occured, please check back later', duration: Snackbar.LENGTH_SHORT,});
+		});
+	}
+
+	// GET AVAILABLE SHOWTIMES CALLED AFTER DATE IS SELECTED
+	const getAvailableTime = () => {
+		fetch(`${apiLink}/movie/movieTimes?date=${selectedDate}`, {
+			method: "GET",
+		})
+		.then((res) => res.json())
+		.then((data) => {
+			setTimeList(data.time)
+		})
+		.catch((error) => {
+			console.error("Error fetching available time:", error);
+			Snackbar.show({ text: 'An error has occured, please check back later', duration: Snackbar.LENGTH_SHORT,});
+		});
+	}
+
+	// CONNECT WEBSOCKET TO GET LIVE SEAT SELECTIONS
+	const getLiveSeatData = (time) => {
+
+		setMovieId(`${id}-${selectedCinema}-${selectedDate.date}-${time}`.toLowerCase().replace(/\s+/g, ''))
 		const newSocket = io('http://10.0.2.2:3000', {
 			transports: ['websocket'],
 			timeout: 5000,
@@ -65,197 +103,264 @@ export default TicketBooking = () => {
 		setSocket(newSocket);
 	
 		newSocket.on('connect', () => {
-			console.log('✅ Connected to server');
-			newSocket.emit('join_movie', movieId);
+			console.log('Connected to server');
+			newSocket.emit('join_movie', `${id}-${selectedCinema}-${selectedDate.date}-${time}`.toLowerCase().replace(/\s+/g, ''));
 		});
 	
 		newSocket.on('seat_status', (seats) => {
-			console.log('🎟️ Seat Status Update:', seats);
+			console.log('Seat Status Update:', seats);
 			setSeatStatus({...seats});
 		});
 	
 		newSocket.on('disconnect', () => {
-			console.log('❌ Disconnected from server');
+			console.log('Disconnected from server');
 		});
 	
 		newSocket.on('connect_error', (err) => {
-			console.log('⚠️ Connection Error:', err.message);
+			console.log('Connection Error:', err.message);
 		});
 	
-		return () => {
-			newSocket.disconnect();
-		};
-	}, []);
+		return () => newSocket.disconnect();
+	}
 
 	const handleSeatPress = (seatId) => {
-		if (seatStatus[seatId] === 2) return;
-	
 		setSelectedSeats((prevSelected) => {
 			const updated = new Set(prevSelected);
-			
 			if (updated.has(seatId)) {
 				// DESELECT
 				updated.delete(seatId);
 				socket.emit('deselect_seat', {movieId, seatId} );
+				setSeatStatus((prev) => {
+					const newStatus = { ...prev };
+					delete newStatus[seatId];
+					return newStatus;
+				});
 			} else {
 				// SELECT
 				updated.add(seatId);
 				socket.emit('select_seat', {movieId, seatId} );
+				setSeatStatus((prev) => ({
+					...prev,
+					[seatId]: 1,
+				}));
 			}
 			return updated;
 		});
 	};
 
 	const cancelSeatSelection = () => {
-		selectedSeats.forEach(seatId => {
-			socket.emit('deselect_seat', { movieId, seatId });
-		});
-		console.log("HELPPP")
-		navigation.goBack()
+		if (socket !== null) {
+			selectedSeats.forEach(seatId => {
+				socket.emit('deselect_seat', { movieId, seatId });
+			});
+		}
 	}
 	
-	const seatPrice = 2500;
+	const scrollViewRef = useRef();
+
+	useEffect(() => {
+		getCinemaLocations()
+	}, []);
 
 
 	return (
 		<SafeAreaView style={TicketBookingStyles.container}>	
-			<Pressable style={TicketBookingStyles.headerButton} onPress={cancelSeatSelection}>
+			<Pressable style={TicketBookingStyles.headerButton} onPress={() => { cancelSeatSelection(); navigation.goBack() }}>
 				<Icon name="arrow-back" size={24} color="white" />
 			</Pressable>	
 			<Text style={TicketBookingStyles.title}>Ticket Booking</Text>
 	
 
-			<ScrollView style={TicketBookingStyles.scrollContainer}>
-
-				<Text  style={TicketBookingStyles.description}>Where would you like to see the movie? Kindly select as appropriate</Text>
+			<ScrollView
+				ref={scrollViewRef}
+				style={TicketBookingStyles.scrollContainer}
+				onContentSizeChange={() => scrollViewRef.current.scrollToEnd({ animated: true })}
+			>
+				<Text style={TicketBookingStyles.description}>Where would you like to see the movie? Kindly select as appropriate</Text>
 
 				{/* SEAT TIER??? */}
-				<View>
-					<View>
-						<Text>Tickets from</Text>
+				<View style={TicketBookingStyles.seatTierContainer}>
+					<View style={TicketBookingStyles.seatTier}>
+						<Text style={TicketBookingStyles.tierTextIndicate}>Tickets from</Text>
+						<Text style={TicketBookingStyles.tierText}>$ 2000 - $ 5000</Text>
+					</View>
+					<View style={TicketBookingStyles.seatTier}>
+						<Text style={TicketBookingStyles.tierTextIndicate}>Tickets from</Text>
+						<Text style={TicketBookingStyles.tierText}>$ 1500 - $ 4500</Text>
 					</View>
 				</View>
 
 				{/* LOCATION */}
-				<Text style={TicketBookingStyles.selectorLabel}>Location</Text>
+				<SelectorLabel label={"Location"} />
 				<View style={TicketBookingStyles.dropdownWrapper}>
-					<Picker selectedValue={selectedLocation} style={TicketBookingStyles.picker} onValueChange={itemValue => setSelectedLocation(itemValue)}>
+					<Picker 
+						selectedValue={selectedLocation} 
+						style={TicketBookingStyles.picker} 
+						onValueChange={(state) => {setSelectedLocation(state); setCinemaList(locationList[state])}}
+					>
 						<Picker.Item label="Select Location" value={null} />
-						<Picker.Item label="Kuala Lumpur" value="kl" />
+						{ Object.keys(locationList).map((states, index) => (<Picker.Item key={index} label={states} value={states} />)) }
 					</Picker>
 				</View>
 
 				{/* HALL */}
-				<Text style={TicketBookingStyles.selectorLabel}>Cinema Location</Text>
+				<SelectorLabel label={"Cinema Location"} />
 				<View style={TicketBookingStyles.dropdownWrapper}>
-					<Picker selectedValue={selectedCinema} style={TicketBookingStyles.picker} onValueChange={itemValue => setSelectedCinema(itemValue)}>
+					<Picker 
+						selectedValue={selectedCinema} 
+						style={TicketBookingStyles.picker} 
+						onValueChange={itemValue => {setSelectedCinema(itemValue); cancelSeatSelection()}}
+					>
 						<Picker.Item label="Select Cinema Hall" value={null} />
-						<Picker.Item label="Pavillion" value="pavillion" />
+						{ cinemaList.map((cinema, index) => (<Picker.Item key={index} label={cinema} value={cinema} />)) }
 					</Picker>
 				</View>
 
 				{/* DATE */}
-				<Text style={TicketBookingStyles.selectorLabel}>Select a date</Text>
-				<Text style={TicketBookingStyles.dateMonth}>| {next7Days.month} |</Text>
-				<View style={TicketBookingStyles.dateRow}>
-					{next7Days.dates.map((date, index) => (
-						<Pressable
-							key={index}
-							style={[TicketBookingStyles.dateBox, selectedDate === index && TicketBookingStyles.selectedBox]}
-							onPress={() => setSelectedDate(index)}
-						>
-							<Text style={TicketBookingStyles.dateText}>{date.day}</Text>
-							<Text style={TicketBookingStyles.dateText} >{date.date}</Text>
-						</Pressable>
-					))}
-				</View>
+				{ selectedCinema && ( <>
+					<SelectorLabel label={"Date"} />
+					<Text style={TicketBookingStyles.dateMonth}>| {next7Days.month} |</Text>
+					<View style={TicketBookingStyles.dateRow}>
+						{next7Days.dates.map((date, index) => (
+							<Pressable
+								key={index}
+								style={[TicketBookingStyles.dateBox, selectedDate?.date === date.date && TicketBookingStyles.selectedBox]}
+								onPress={() => {setSelectedDate(date); getAvailableTime(date); cancelSeatSelection()}}
+							>
+								<Text style={TicketBookingStyles.dateText}>{date.day}</Text>
+								<Text style={TicketBookingStyles.dateText}>{date.date}</Text>
+							</Pressable>
+						))}
+					</View>
+				</>)}
+				
 
 				{/* TIME */}
-				<Text style={TicketBookingStyles.selectorLabel}>Available Time</Text>
-				<View style={TicketBookingStyles.timeRow}>
-					{times.map((time, index) => (
-						<Pressable
-							key={index}
-							style={[TicketBookingStyles.timeBox, selectedTime === index && TicketBookingStyles.selectedBox]}
-							onPress={() => setSelectedTime(index)}>
-							<Text style={TicketBookingStyles.timeText}>{time}</Text>
-						</Pressable>
-					))}
-				</View>
+				{selectedDate && ( <>
+					<SelectorLabel label={"Available Time"} />
+
+					<View style={TicketBookingStyles.timeRow}>
+						{Array.isArray(timeList) && timeList.length > 0 ? (
+							timeList.map((time, index) => (
+							<Pressable
+								key={index}
+								style={[ TicketBookingStyles.timeBox, selectedTime === time && TicketBookingStyles.selectedBox]}
+								onPress={() => { setSelectedTime(time); cancelSeatSelection(); getLiveSeatData(time)}}
+							>
+								<Text style={TicketBookingStyles.timeText}>{time}</Text>
+							</Pressable>
+							))
+						) : ( <Text style={TicketBookingStyles.noTimeText}>No available times.</Text>)
+						}
+					</View>
+				</>)}
 
 				{/* SEAT SELECTION */}
-				<Text style={TicketBookingStyles.seatSelectorLabel}>Select Seat</Text>
-				<View style={TicketBookingStyles.legendContainer}>
-					<View style={TicketBookingStyles.legendItem}>
-						<View style={TicketBookingStyles.seat} />
-						<Text style={TicketBookingStyles.legendLabel}>Available</Text>
-					</View>
-					<View style={TicketBookingStyles.legendItem}>
-						<View style={TicketBookingStyles.seat}>
-							<Icon name="close" size={17} color="lightgray" style={{margin: 0}}/>
+				{ selectedTime && ( <>
+					{/* TITLE AND LEGEND */}
+					<SelectorLabel label={"Select Seat"} />
+					<View style={TicketBookingStyles.legendContainer}>
+						<View style={TicketBookingStyles.legendItem}>
+							<View style={TicketBookingStyles.seat} />
+							<Text style={TicketBookingStyles.legendLabel}>Available</Text>
 						</View>
-						<Text style={TicketBookingStyles.legendLabel}>Unavailable</Text>
+						<View style={TicketBookingStyles.legendItem}>
+							<View style={TicketBookingStyles.seat}>
+								<Icon name="close" size={17} color="lightgray" style={{margin: 0}}/>
+							</View>
+							<Text style={TicketBookingStyles.legendLabel}>Unavailable</Text>
+						</View>
+						<View style={TicketBookingStyles.legendItem}>
+							<View style={[TicketBookingStyles.seat, TicketBookingStyles.userSeatSelected]} />
+							<Text style={TicketBookingStyles.legendLabel}>Selected</Text>
+						</View>
+						<View style={TicketBookingStyles.legendItem}>
+							<View style={[TicketBookingStyles.seat, TicketBookingStyles.seatSelected]} />
+							<Text style={TicketBookingStyles.legendLabel}>Booked</Text>
+						</View>
 					</View>
-					<View style={TicketBookingStyles.legendItem}>
-						<View style={[TicketBookingStyles.seat, TicketBookingStyles.seatSelected]} />
-						<Text style={TicketBookingStyles.legendLabel}>Selected</Text>
-					</View>
-				</View>
 
-				{/* CINEMA VIEW */}
-				<View style={TicketBookingStyles.screen} />
-				<Text style={TicketBookingStyles.screenLabel}>Screen</Text>
+					{/* CINEMA VIEW */}
+					<View style={TicketBookingStyles.screen} />
+					<Text style={TicketBookingStyles.screenLabel}>Screen</Text>
 
-				{seatRows.map(row => (
-					<View key={row} style={TicketBookingStyles.seatRow}>
-						<Text style={TicketBookingStyles.rowLabel}>{row}</Text>
+					{seatRows.map(row => (
+						<View key={row} style={TicketBookingStyles.seatRow}>
+							<Text style={TicketBookingStyles.rowLabel}>{row}</Text>
 
-						{[...Array(8)].map((_, colIdx) => {
-							const seatId = `${row}${colIdx + 1}`;
-							if ((colIdx == 0 || colIdx == 7) && (row === "A" || row === "H")) {
-								return <View key={seatId} style={[TicketBookingStyles.seat, TicketBookingStyles.seatBlank]} />;
-							}
-							if (seatStatus[seatId] === 2) {
+							{[...Array(8)].map((_, colIdx) => {
+								const seatId = `${row}${colIdx + 1}`;
+
+								{/* NO SEATS ON A1 A8 H1 H8 */}
+								if ((colIdx == 0 || colIdx == 7) && (row === "A" || row === "H")) {
+									return <View key={seatId} style={[TicketBookingStyles.seat, TicketBookingStyles.seatBlank]} />;
+								}
+
+								{/* USER SELECTED SEATS, IF LOCAL VARIABLE HAS SEAT ID MEANS THIS USER SELECTED AND CAN EDIT, ELSE ITS OTHER USERS BOOKED */}
+								if (seatStatus[seatId] == 1) {
+									return (
+										<Pressable
+											key={seatId}
+											style={[TicketBookingStyles.seat,  (selectedSeats.has(seatId) ? TicketBookingStyles.userSeatSelected : TicketBookingStyles.seatSelected )]}
+											onPress={() => selectedSeats.has(seatId) ? handleSeatPress(seatId) : null}
+										/>
+									);
+								}
+
+								{/* UNAVAILABLE SEATS - ALREADY BOUGHT / MAINTENANCE */}
+								if (seatStatus[seatId] == 2) {
+									return (
+										<View key={seatId} style={TicketBookingStyles.seat}>
+											<Icon name="close" size={17} color="lightgray" />
+										</View>
+									);
+								}
+
+								{/* AVAILABLE SEATS */}
 								return (
-									<View key={seatId} style={TicketBookingStyles.seat}>
-										<Icon name="close" size={17} color="lightgray" />
-									</View>
+									<Pressable
+										key={seatId}
+										style={[TicketBookingStyles.seat]}
+										onPress={() => handleSeatPress(seatId)}
+									/>
 								);
-							}
-							const isSelected = selectedSeats.has(seatId);
-							return (
-								<Pressable
-									key={seatId}
-									style={[TicketBookingStyles.seat, ((isSelected || seatStatus[seatId]) && TicketBookingStyles.seatSelected)]}
-									onPress={() => handleSeatPress(seatId)}
-								/>
-							);
-						})}
+							})}
 
-						<Text style={TicketBookingStyles.rowLabel}>{row}</Text>
+							<Text style={TicketBookingStyles.rowLabel}>{row}</Text>
+						</View>
+					))}
+
+					{/* BOOKING INFO */}
+					<View style={TicketBookingStyles.bookingInfoContainer}>
+						<View style={TicketBookingStyles.summaryBox}>
+							<Text style={TicketBookingStyles.summaryText}>SEAT</Text>
+							<Text style={TicketBookingStyles.selectedSeats}>
+								{ Array.from(selectedSeats).sort((a, b) => {
+									const [rowA, colA] = [a.charAt(0), parseInt(a.slice(1))];
+									const [rowB, colB] = [b.charAt(0), parseInt(b.slice(1))];
+
+									if (rowA < rowB) return -1;
+									if (rowA > rowB) return 1;
+
+									return colA - colB;
+								}).join(', ')}
+							</Text>					
+						</View>
+						<View style={TicketBookingStyles.summaryBox}>
+						<Text style={TicketBookingStyles.summaryText}>SUB-TOTAL</Text>
+						<Text style={TicketBookingStyles.subtotal}>
+							$ {(selectedSeats.size * seatPrice) || 0}
+						</Text>
+						</View>
 					</View>
-				))}
 
-				{/* BOOKING INFO */}
-				<View style={TicketBookingStyles.bookingInfoContainer}>
-					<View style={TicketBookingStyles.summaryBox}>
-						<Text style={TicketBookingStyles.summaryText}>SEAT</Text>
-						<Text style={TicketBookingStyles.selectedSeats}>{Array.from(selectedSeats).join(', ')}</Text>
-					</View>
-					<View style={TicketBookingStyles.summaryBox}>
-					<Text style={TicketBookingStyles.summaryText}>SUB-TOTAL</Text>
-					<Text style={TicketBookingStyles.subtotal}>
-						₦ {(selectedSeats.size * seatPrice) || 0}
-					</Text>
-					</View>
-				</View>
-
-
+					
+				</>)}
 			</ScrollView>
 
 			{/* CANCEL AND PROCEED */}
 			<View style={TicketBookingStyles.actionButtons}>
-				<Pressable style={TicketBookingStyles.cancelButton} onPress={cancelSeatSelection}>
+				<Pressable style={TicketBookingStyles.cancelButton} onPress={() => { cancelSeatSelection(); navigation.goBack() }}>
 					<Text style={TicketBookingStyles.cancelText}>Cancel</Text>
 				</Pressable>
 				<Pressable style={TicketBookingStyles.proceedButton}  onPress={() => console.log("proceed")}>
@@ -298,6 +403,28 @@ const TicketBookingStyles = StyleSheet.create({
 		color: 'lightgray'
 	},
 
+	seatTierContainer: {
+		flexDirection: 'row',
+		marginVertical: "10",
+		justifyContent: "space-between",
+		gap: 10
+	},
+	seatTier: {
+		flex: 1,
+		heigh: 200,
+		borderRadius: 5,
+		backgroundColor: "#555",
+		padding: 10,
+		paddingTop: 20
+	},
+	tierTextIndicate: {
+		color: 'lightgray',
+		fontSize: 8
+	},
+	tierText: {
+		color: 'white'
+	},
+
 	dropdownWrapper: {
 		height: 40,
 		paddingHorizontal: 10,
@@ -305,16 +432,22 @@ const TicketBookingStyles = StyleSheet.create({
 		borderWidth: 1,
 		borderColor: '#555',
 		borderRadius: 10,
-		backgroundColor: 'white',
+		backgroundColor: 'black',
 		justifyContent: 'center',
 		marginBottom: 10
 	},
 	picker: {
-		color: 'gray',
+		color: 'white',
 		fontSize: 16,
 		width: '100%',
 	},
 
+	dateMonth: {
+		color: 'gray',
+		fontSize: 12,
+		paddingHorizontal: 5,
+		marginBottom: 5
+	},
 	dateRow: {
 		flexDirection: 'row',
 		flexWrap: 'nowrap',
@@ -324,19 +457,17 @@ const TicketBookingStyles = StyleSheet.create({
 		flex: 1,
 		paddingVertical: 8,
 		paddingHorizontal: 2,
+		borderWidth: 1,
+
 		borderRadius: 8,
 		marginRight: 8,
 		marginBottom: 8
 	},
-	dateMonth: {
-		color: 'gray',
-		fontSize: 12,
-		paddingHorizontal: 5
-	},
+
 	dateText: {
 		color: '#fff',
 		fontSize: 12,
-		textAlign: 'center'
+		textAlign: 'center',
 	},
 
 	timeRow: {
@@ -347,8 +478,7 @@ const TicketBookingStyles = StyleSheet.create({
 	},
 	timeBox: {
 		width: 80,
-		borderWidth: 0.5,
-		borderColor: "lightgray",
+		borderWidth: 1,
 		paddingVertical: 10,
 		paddingHorizontal: 10,
 		borderRadius: 10,
@@ -359,7 +489,8 @@ const TicketBookingStyles = StyleSheet.create({
 		textAlign: 'center',
 	},
 	selectedBox: {
-		backgroundColor: 'gray',
+		// backgroundColor: '#555',
+		borderColor: "#555"
 	},
 
 	seatSelectorLabel: {
@@ -379,20 +510,25 @@ const TicketBookingStyles = StyleSheet.create({
 	},
 	legendLabel: {
 		color: 'gray', 
-		marginLeft: 5
+		marginLeft: 5,
+		fontSize: 12,
 	},
 	seat: {
 		backgroundColor: '#444',
 		width: 20, 
 		height: 20, 
 		borderRadius: 4,
-		padding: 1
+		padding: 1,
+		justifyContent: "center"
 	},
 	seatBlank: {
 		backgroundColor: "black"
 	},
-	seatSelected: {
+	userSeatSelected: {
 		backgroundColor: "lightgray"
+	},
+	seatSelected: {
+		backgroundColor: "red"
 	},
 
 
@@ -463,7 +599,7 @@ const TicketBookingStyles = StyleSheet.create({
 	},
 	proceedButton: {
 		flex: 1,
-		backgroundColor: 'lightgray',
+		backgroundColor: '#555',
 		padding: 12,
 		borderRadius: 6,
 		alignItems: 'center',

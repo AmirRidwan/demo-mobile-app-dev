@@ -10,8 +10,6 @@ export default MovieDetails = () => {
 	const route = useRoute();
 	const { movieData } = route.params 
 
-	console.log(movieData)
-
 	return (
 		<SafeAreaView style={styles.container}>			
 			{/* HEADER */}
@@ -143,7 +141,6 @@ export default MovieDetails = () => {
 				{/* Book Ticket Button */}
 				<Pressable 
 					style={styles.bookButton}
-					
 					onPress={() => navigation.navigate('TicketBooking', { id: movieData.id })}
 				>
 					<Text style={styles.bookButtonText}>Book Ticket</Text>
