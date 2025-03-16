@@ -58,9 +58,32 @@ export default function PaymentScreen() {
   const handleProceedToPayment = async () => {
     try {
       setProcessing(true);
+      // Save booking data with updated totals
+      if (booking) {
+        const updatedBooking = {
+          ...booking,
+          serviceCharge: serviceCharge,
+          grandTotal: total,
+        };
+
+        // Save updated booking to AsyncStorage
+        const bookingsJson = await AsyncStorage.getItem("bookings");
+        if (bookingsJson) {
+          const bookings: Booking[] = JSON.parse(bookingsJson);
+          const updatedBookings = bookings.map((b) =>
+            b.id === bookingId ? updatedBooking : b
+          );
+          await AsyncStorage.setItem(
+            "bookings",
+            JSON.stringify(updatedBookings)
+          );
+          setBooking(updatedBooking); // Update local state
+        }
+      }
+
       // Navigate to payment method selection screen
       router.push({
-        pathname: "/payment/transaction",
+        pathname: "/payment/methodSelection",
         params: { id: bookingId },
       });
     } catch (error) {
@@ -283,7 +306,7 @@ export default function PaymentScreen() {
                 Total Amount Payable
               </ThemedText>
               <ThemedText style={paymentStyles.totalPrice}>
-                RM {total.toFixed(0) || "10,450"}
+                RM {total.toFixed(0)}
               </ThemedText>
             </ThemedView>
           </ThemedView>

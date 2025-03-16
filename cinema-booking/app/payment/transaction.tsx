@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import {
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
   Alert,
@@ -16,7 +15,14 @@ import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Booking } from "@/types";
-import { formatPaymentData, isPaymentDataValid, isValidCardNumber, isValidCVV, isValidExpirationDate } from "@/utils/paymentHelpers";
+import { paymentStyles } from "@/app/styles/paymentStyles";
+import {
+  formatPaymentData,
+  isPaymentDataValid,
+  isValidCardNumber,
+  isValidCVV,
+  isValidExpirationDate,
+} from "@/utils/paymentHelpers";
 
 // Simple IBAN validation (very basic)
 const validateIBAN = (iban: string) => iban.length >= 15;
@@ -86,7 +92,6 @@ export default function PaymentDetailsScreen() {
         cardHolderName: cardName,
       };
 
-      // Use the helper function to validate payment data
       if (!isPaymentDataValid(paymentDetails)) {
         if (
           !paymentDetails.cardNumber ||
@@ -143,7 +148,7 @@ export default function PaymentDetailsScreen() {
 
   if (loading) {
     return (
-      <ThemedView style={[styles.container, styles.centered]}>
+      <ThemedView style={[paymentStyles.container, paymentStyles.centered]}>
         <ActivityIndicator
           size="large"
           color={Colors[colorScheme ?? "light"].tint}
@@ -154,30 +159,32 @@ export default function PaymentDetailsScreen() {
 
   if (!booking) {
     return (
-      <ThemedView style={[styles.container, styles.centered]}>
+      <ThemedView style={[paymentStyles.container, paymentStyles.centered]}>
         <ThemedText>Booking not found</ThemedText>
       </ThemedView>
     );
   }
 
-  // Calculate the total amount
-  const ticketTotal = booking.subtotal || 0;
-  const fnbTotal = booking.fnbTotal || 0;
-  const total = ticketTotal + fnbTotal;
+  const grandTotal = booking?.grandTotal ?? 0;
 
   // Get payment form based on selected method
   const renderPaymentForm = () => {
     switch (paymentMethod) {
       case "debit":
         return (
-          <ThemedView style={styles.formContainer}>
-            <ThemedText style={styles.formTitle}>Debit Card Payment</ThemedText>
+          <ThemedView style={paymentStyles.formContainer}>
+            <ThemedText style={paymentStyles.formTitle}>
+              Debit Card Payment
+            </ThemedText>
 
-            <View style={styles.inputGroup}>
-              <ThemedText style={styles.inputLabel}>Card Number</ThemedText>
+            <View style={paymentStyles.inputGroup}>
+              <ThemedText style={paymentStyles.inputLabel}>
+                Card Number
+              </ThemedText>
               <TextInput
-                style={styles.input}
+                style={paymentStyles.input}
                 placeholder="1234 5678 9012 3456"
+                placeholderTextColor="#666"
                 value={cardNumber}
                 onChangeText={setCardNumber}
                 keyboardType="numeric"
@@ -185,33 +192,42 @@ export default function PaymentDetailsScreen() {
               />
             </View>
 
-            <View style={styles.inputGroup}>
-              <ThemedText style={styles.inputLabel}>Name on Card</ThemedText>
+            <View style={paymentStyles.inputGroup}>
+              <ThemedText style={paymentStyles.inputLabel}>
+                Name on Card
+              </ThemedText>
               <TextInput
-                style={styles.input}
+                style={paymentStyles.input}
                 placeholder="John Doe"
+                placeholderTextColor="#666"
                 value={cardName}
                 onChangeText={setCardName}
               />
             </View>
 
-            <View style={styles.inputRow}>
-              <View style={[styles.inputGroup, { flex: 1, marginRight: 10 }]}>
-                <ThemedText style={styles.inputLabel}>Expiry Date</ThemedText>
+            <View style={paymentStyles.inputRow}>
+              <View
+                style={[paymentStyles.inputGroup, { flex: 1, marginRight: 10 }]}
+              >
+                <ThemedText style={paymentStyles.inputLabel}>
+                  Expiry Date
+                </ThemedText>
                 <TextInput
-                  style={styles.input}
+                  style={paymentStyles.input}
                   placeholder="MM/YY"
+                  placeholderTextColor="#666"
                   value={expiry}
                   onChangeText={setExpiry}
                   maxLength={5}
                 />
               </View>
 
-              <View style={[styles.inputGroup, { flex: 1 }]}>
-                <ThemedText style={styles.inputLabel}>CVV</ThemedText>
+              <View style={[paymentStyles.inputGroup, { flex: 1 }]}>
+                <ThemedText style={paymentStyles.inputLabel}>CVV</ThemedText>
                 <TextInput
-                  style={styles.input}
+                  style={paymentStyles.input}
                   placeholder="123"
+                  placeholderTextColor="#666"
                   value={cvv}
                   onChangeText={setCvv}
                   keyboardType="numeric"
@@ -225,36 +241,43 @@ export default function PaymentDetailsScreen() {
 
       case "bank":
         return (
-          <ThemedView style={styles.formContainer}>
-            <ThemedText style={styles.formTitle}>Bank Transfer</ThemedText>
+          <ThemedView style={paymentStyles.formContainer}>
+            <ThemedText style={paymentStyles.formTitle}>
+              Bank Transfer
+            </ThemedText>
 
-            <View style={styles.inputGroup}>
-              <ThemedText style={styles.inputLabel}>
+            <View style={paymentStyles.inputGroup}>
+              <ThemedText style={paymentStyles.inputLabel}>
                 Account Holder Name
               </ThemedText>
               <TextInput
-                style={styles.input}
+                style={paymentStyles.input}
                 placeholder="John Doe"
+                placeholderTextColor="#666"
                 value={accountName}
                 onChangeText={setAccountName}
               />
             </View>
 
-            <View style={styles.inputGroup}>
-              <ThemedText style={styles.inputLabel}>IBAN</ThemedText>
+            <View style={paymentStyles.inputGroup}>
+              <ThemedText style={paymentStyles.inputLabel}>IBAN</ThemedText>
               <TextInput
-                style={styles.input}
+                style={paymentStyles.input}
                 placeholder="DE12 3456 7890 1234 5678 90"
+                placeholderTextColor="#666"
                 value={iban}
                 onChangeText={setIban}
               />
             </View>
 
-            <View style={styles.inputGroup}>
-              <ThemedText style={styles.inputLabel}>Bank Name</ThemedText>
+            <View style={paymentStyles.inputGroup}>
+              <ThemedText style={paymentStyles.inputLabel}>
+                Bank Name
+              </ThemedText>
               <TextInput
-                style={styles.input}
+                style={paymentStyles.input}
                 placeholder="Bank Name"
+                placeholderTextColor="#666"
                 value={bankName}
                 onChangeText={setBankName}
               />
@@ -264,24 +287,29 @@ export default function PaymentDetailsScreen() {
 
       case "crypto":
         return (
-          <ThemedView style={styles.formContainer}>
-            <ThemedText style={styles.formTitle}>Crypto Payment</ThemedText>
+          <ThemedView style={paymentStyles.formContainer}>
+            <ThemedText style={paymentStyles.formTitle}>
+              Crypto Payment
+            </ThemedText>
 
-            <View style={styles.inputGroup}>
-              <ThemedText style={styles.inputLabel}>Network</ThemedText>
-              <View style={styles.cryptoOptions}>
+            <View style={paymentStyles.inputGroup}>
+              <ThemedText style={paymentStyles.inputLabel}>Network</ThemedText>
+              <View style={paymentStyles.cryptoOptions}>
                 {["ETH", "BTC", "SOL"].map((network) => (
                   <TouchableOpacity
                     key={network}
                     style={[
-                      styles.cryptoOption,
-                      networkType === network && styles.selectedCryptoOption,
+                      paymentStyles.cryptoOption,
+                      networkType === network &&
+                        paymentStyles.selectedCryptoOption,
                     ]}
                     onPress={() => setNetworkType(network)}
                   >
                     <ThemedText
                       style={
-                        networkType === network ? styles.selectedCryptoText : {}
+                        networkType === network
+                          ? paymentStyles.selectedCryptoText
+                          : {}
                       }
                     >
                       {network}
@@ -291,23 +319,26 @@ export default function PaymentDetailsScreen() {
               </View>
             </View>
 
-            <View style={styles.inputGroup}>
-              <ThemedText style={styles.inputLabel}>Wallet Address</ThemedText>
+            <View style={paymentStyles.inputGroup}>
+              <ThemedText style={paymentStyles.inputLabel}>
+                Wallet Address
+              </ThemedText>
               <TextInput
-                style={styles.input}
+                style={paymentStyles.input}
                 placeholder="0x1234..."
+                placeholderTextColor="#666"
                 value={cryptoAddress}
                 onChangeText={setCryptoAddress}
               />
             </View>
 
-            <ThemedView style={styles.noteContainer}>
+            <ThemedView style={paymentStyles.noteContainer}>
               <Ionicons
                 name="information-circle-outline"
                 size={20}
                 color="#666"
               />
-              <ThemedText style={styles.noteText}>
+              <ThemedText style={paymentStyles.noteText}>
                 Please make sure you enter the correct wallet address.
                 Transactions cannot be reversed.
               </ThemedText>
@@ -321,10 +352,10 @@ export default function PaymentDetailsScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <ThemedView style={styles.header}>
+    <ScrollView style={paymentStyles.transactionContainer}>
+      <ThemedView style={paymentStyles.transactionHeader}>
         <TouchableOpacity
-          style={styles.backButton}
+          style={paymentStyles.backButtonTransaction}
           onPress={() => router.back()}
         >
           <Ionicons
@@ -333,35 +364,44 @@ export default function PaymentDetailsScreen() {
             color={Colors[colorScheme ?? "light"].text}
           />
         </TouchableOpacity>
-        <ThemedText style={styles.headerTitle}>Payment Details</ThemedText>
+        <ThemedText style={paymentStyles.headerTitle}>
+          Payment Details
+        </ThemedText>
         <View style={{ width: 24 }} />
       </ThemedView>
 
-      <ThemedView style={styles.amountContainer}>
-        <ThemedText style={styles.amountLabel}>Payment Amount</ThemedText>
-        <ThemedText style={styles.amount}>${total.toFixed(2)}</ThemedText>
+      <ThemedView style={paymentStyles.amountContainer}>
+        <ThemedText style={paymentStyles.amountLabel}>
+          Payment Amount
+        </ThemedText>
+        <ThemedText style={paymentStyles.amount}>
+          RM {grandTotal.toFixed(0)}
+        </ThemedText>
       </ThemedView>
 
       {renderPaymentForm()}
 
-      <ThemedView style={styles.actions}>
+      <ThemedView style={paymentStyles.actions}>
         <TouchableOpacity
-          style={styles.cancelButton}
+          style={paymentStyles.cancelButton}
           onPress={() => router.back()}
           disabled={processing}
         >
-          <ThemedText style={styles.cancelButtonText}>Back</ThemedText>
+          <ThemedText style={paymentStyles.cancelButtonText}>Back</ThemedText>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.payButton, processing && styles.disabledButton]}
+          style={[
+            paymentStyles.payButton,
+            processing && paymentStyles.disabledButton,
+          ]}
           onPress={handlePayment}
           disabled={processing}
         >
           {processing ? (
             <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
-            <ThemedText style={styles.payButtonText}>
+            <ThemedText style={paymentStyles.payButtonText}>
               Complete Payment
             </ThemedText>
           )}
@@ -370,134 +410,3 @@ export default function PaymentDetailsScreen() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  centered: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingTop: 60,
-    paddingBottom: 16,
-  },
-  backButton: {
-    padding: 8,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  amountContainer: {
-    alignItems: "center",
-    paddingVertical: 24,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-    marginBottom: 24,
-  },
-  amountLabel: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 4,
-  },
-  amount: {
-    fontSize: 32,
-    fontWeight: "bold",
-  },
-  formContainer: {
-    paddingHorizontal: 16,
-    marginBottom: 24,
-  },
-  formTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 16,
-  },
-  inputGroup: {
-    marginBottom: 16,
-  },
-  inputLabel: {
-    marginBottom: 8,
-    fontWeight: "500",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    color: "grey",
-    padding: 12,
-    fontSize: 16,
-  },
-  inputRow: {
-    flexDirection: "row",
-  },
-  cryptoOptions: {
-    flexDirection: "row",
-    marginBottom: 16,
-  },
-  cryptoOption: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 20,
-    marginRight: 8,
-  },
-  selectedCryptoOption: {
-    backgroundColor: Colors.light.tint,
-    borderColor: Colors.light.tint,
-  },
-  selectedCryptoText: {
-    color: "#fff",
-  },
-  noteContainer: {
-    flexDirection: "row",
-    padding: 12,
-    borderRadius: 8,
-    marginTop: 16,
-  },
-  noteText: {
-    fontSize: 12,
-    color: "#666",
-    flex: 1,
-    marginLeft: 8,
-  },
-  actions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    marginBottom: 30,
-  },
-  cancelButton: {
-    flex: 1,
-    padding: 16,
-    marginRight: 8,
-    borderRadius: 8,
-    backgroundColor: "grey",
-    alignItems: "center",
-  },
-  cancelButtonText: {
-    fontWeight: "600",
-  },
-  payButton: {
-    flex: 2,
-    padding: 16,
-    borderRadius: 8,
-    backgroundColor: Colors.light.tint,
-    alignItems: "center",
-  },
-  payButtonText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-  disabledButton: {
-    opacity: 0.5,
-  },
-});
