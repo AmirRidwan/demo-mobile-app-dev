@@ -8,11 +8,12 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 // SCREENS
-import HomeScreen from './src/screens/home';
+import Home from './src/screens/home';
 import MovieDetails from './src/screens/movieDetails';
 import TicketBooking from './src/screens/ticketBooking'
 import BookingSummary from './src/screens/bookingSummary'
 import Payment from './src/screens/payment';
+import paymentSuccess from './src/screens/paymentSuccess';
 
 // PLACEHOLDER SCREEN FOR TABS
 const ProfileScreen = () => <></>;
@@ -60,7 +61,7 @@ const MainTabs = () => {
 				},
 			})}
 		>
-			<Tab.Screen name="Home" component={HomeScreen} />
+			<Tab.Screen name="Home" component={Home} />
 			<Tab.Screen name="Tickets" component={TicketsScreen} />
 			<Tab.Screen name="Favorites" component={FavoritesScreen} />
 			<Tab.Screen name="Profile" component={ProfileScreen} />
@@ -78,6 +79,8 @@ export default App = () => {
 					<Stack.Screen name="TicketBooking" component={TicketBooking} />
 					<Stack.Screen name="BookingSummary" component={BookingSummary} />
 					<Stack.Screen name="Payment" component={Payment} />
+					<Stack.Screen name="PaymentSuccess" component={paymentSuccess} />
+
 				</Stack.Navigator>
 			</NavigationContainer>
 		</SafeAreaProvider>
