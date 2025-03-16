@@ -34,6 +34,7 @@ export interface Booking {
   id: string;
   movie: Movie;
   screening: Screening;
+  location: string;
   seats: string[];
   bookingTime: number;
   subtotal: number;

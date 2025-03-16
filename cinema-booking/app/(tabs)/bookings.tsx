@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
-  StyleSheet,
   FlatList,
   TouchableOpacity,
   Alert,
@@ -12,6 +11,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Booking } from "@/types";
+import { styles, bookingStyles } from "@/app/styles/index";
 
 const BookingCard = ({
   booking,
@@ -20,30 +20,30 @@ const BookingCard = ({
   booking: Booking;
   onCancel: (id: string) => void;
 }) => (
-  <ThemedView style={styles.bookingCard}>
+  <ThemedView style={bookingStyles.bookingCard}>
     <ThemedText type="subtitle">{booking.movie.title}</ThemedText>
 
-    <ThemedView style={styles.bookingDetails}>
+    <ThemedView style={bookingStyles.bookingDetails}>
       <ThemedText>
         {booking.screening.date} • {booking.screening.time}
       </ThemedText>
       <ThemedText>{booking.screening.hall}</ThemedText>
     </ThemedView>
 
-    <ThemedView style={styles.seatContainer}>
+    <ThemedView style={bookingStyles.seatContainer}>
       <ThemedText type="defaultSemiBold">Seats: </ThemedText>
       <ThemedText>{booking.seats.join(", ")}</ThemedText>
     </ThemedView>
 
     {/* FnB Items Section */}
     {booking.fnbItems && booking.fnbItems.length > 0 && (
-      <ThemedView style={styles.fnbContainer}>
-        <ThemedText type="defaultSemiBold" style={styles.fnbTitle}>
+      <ThemedView style={bookingStyles.fnbContainer}>
+        <ThemedText type="defaultSemiBold" style={bookingStyles.fnbTitle}>
           Food & Beverages:
         </ThemedText>
 
         {booking.fnbItems.map((item, index) => (
-          <ThemedView key={`fnb-${index}`} style={styles.fnbItem}>
+          <ThemedView key={`fnb-${index}`} style={bookingStyles.fnbItem}>
             <ThemedText>
               {item.quantity}x {item.name}
             </ThemedText>
@@ -52,21 +52,21 @@ const BookingCard = ({
       </ThemedView>
     )}
 
-    <ThemedView style={styles.summaryContainer}>
+    <ThemedView style={bookingStyles.summaryContainer}>
       <ThemedText type="defaultSemiBold" style={{ marginTop: 10 }}>
         Total: ${booking.grandTotal?.toFixed(2) || booking.subtotal.toFixed(2)}
       </ThemedText>
     </ThemedView>
 
-    <ThemedText style={styles.bookingTime}>
+    <ThemedText style={bookingStyles.bookingTime}>
       Booked on: {new Date(booking.bookingTime).toLocaleString()}
     </ThemedText>
 
     <TouchableOpacity
-      style={styles.cancelButton}
+      style={bookingStyles.cancelButton}
       onPress={() => onCancel(booking.id)}
     >
-      <ThemedText style={styles.cancelButtonText}>Cancel Booking</ThemedText>
+      <ThemedText style={bookingStyles.cancelButtonText}>Cancel Booking</ThemedText>
     </TouchableOpacity>
   </ThemedView>
 );
@@ -162,7 +162,7 @@ export default function BookingsScreen() {
             <BookingCard booking={item} onCancel={handleCancelBooking} />
           )}
           keyExtractor={(item) => item.id || `booking-${item.bookingTime}`}
-          contentContainerStyle={styles.bookingList}
+          contentContainerStyle={bookingStyles.bookingList}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
@@ -172,7 +172,7 @@ export default function BookingsScreen() {
           }
         />
       ) : (
-        <ThemedView style={styles.noBookings}>
+        <ThemedView style={bookingStyles.noBookings}>
           <ThemedText type="subtitle">No bookings found</ThemedText>
           <ThemedText>Your booked tickets will appear here</ThemedText>
         </ThemedView>
@@ -180,83 +180,3 @@ export default function BookingsScreen() {
     </ThemedView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    paddingTop: 60,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 16,
-  },
-  header: {
-    marginBottom: 24,
-  },
-  loadingText: {
-    marginTop: 16,
-  },
-  bookingList: {
-    paddingBottom: 24,
-  },
-  bookingCard: {
-    padding: 16,
-    marginBottom: 16,
-    borderRadius: 12,
-    borderColor: "#ddd",
-    borderWidth: 1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  bookingDetails: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginVertical: 8,
-  },
-  summaryContainer: {
-    marginTop: 8,
-    borderTopWidth: 0.5,
-    borderTopColor: "#ddd",
-  },
-  seatContainer: {
-    flexDirection: "row",
-    marginVertical: 8,
-  },
-  fnbContainer: {
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 0.5,
-    borderTopColor: "#ddd",
-  },
-  fnbTitle: {
-    marginBottom: 8,
-  },
-  fnbItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  bookingTime: {
-    fontSize: 12,
-    color: "#666",
-    marginTop: 8,
-  },
-  noBookings: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  cancelButton: {
-    marginTop: 12,
-    padding: 8,
-    backgroundColor: "#ff4d4f",
-    borderRadius: 6,
-    alignItems: "center",
-  },
-  cancelButtonText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-});

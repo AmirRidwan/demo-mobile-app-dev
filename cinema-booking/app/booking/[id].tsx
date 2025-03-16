@@ -1,15 +1,17 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
   Alert,
   ActivityIndicator,
   Modal,
   FlatList,
+  View,
+  Animated,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AntDesign, MaterialIcons, Feather } from "@expo/vector-icons";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -18,6 +20,15 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { Movie, Screening, Seat, Booking } from "@/types";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import API_CONFIG from "@/utils/api";
+import { bookingStyles } from "@/app/styles/bookingStyles";
+
+// Define a type for formatted date
+interface FormattedDate {
+  dayName: string;
+  dayNumber: number;
+  month: string;
+  fullDate: string;
+}
 
 export default function BookingScreen() {
   const { id } = useLocalSearchParams();
@@ -34,19 +45,40 @@ export default function BookingScreen() {
 
   // New state variables
   const [availableHalls, setAvailableHalls] = useState<string[]>([]);
-  const [availableDates, setAvailableDates] = useState<string[]>([]);
+  const [availableDates, setAvailableDates] = useState<FormattedDate[]>([]);
   const [selectedHall, setSelectedHall] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const [hallModalVisible, setHallModalVisible] = useState(false);
-  const [dateModalVisible, setDateModalVisible] = useState(false);
-  // Add seat cache
   const [seatCache, setSeatCache] = useState<{ [key: string]: Seat[] }>({});
+  const [selectedLocation, setSelectedLocation] = useState<string | null>(null);
+
+  // Time slots state
+  const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([
+    "9:20AM",
+    "11:40AM",
+    "1:20PM",
+    "3:30PM",
+    "5:40PM",
+    "7:30PM",
+    "9:20PM",
+  ]);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
+
+  // Price range state
+  const [selectedPriceRange, setSelectedPriceRange] = useState<string | null>(
+    null
+  );
+  const priceRanges = ["INR 1000 - INR 2000", "INR 1000 - INR 4500"];
 
   const colorScheme = useColorScheme();
   const router = useRouter();
   const { isConnected } = useNetworkStatus();
 
   const TICKET_PRICE = 10;
+
+  const [locationDropdownVisible, setLocationDropdownVisible] = useState(false);
+  const [cinemaDropdownVisible, setCinemaDropdownVisible] = useState(false);
+  const [locationDropdownHeight] = useState(new Animated.Value(0));
+  const [cinemaDropdownHeight] = useState(new Animated.Value(0));
 
   useEffect(() => {
     if (movieId) {
@@ -65,7 +97,7 @@ export default function BookingScreen() {
     setScreening(null);
     setSelectedHall(null);
     setSelectedDate(null);
-    setSubtotal;
+    setSubtotal(0);
     setAvailableHalls([]);
     setAvailableDates([]);
 
@@ -110,6 +142,16 @@ export default function BookingScreen() {
       const hallsData = await hallsResponse.json();
       setAvailableHalls(hallsData);
 
+      // Mock dates for calendar view
+      const currentDate = new Date();
+      const mockDates: FormattedDate[] = [];
+      for (let i = 0; i < 7; i++) {
+        const date = new Date(currentDate);
+        date.setDate(currentDate.getDate() + i);
+        mockDates.push(formatDate(date));
+      }
+      setAvailableDates(mockDates);
+
       setError(null);
     } catch (error) {
       console.error("Error fetching movie data:", error);
@@ -119,65 +161,37 @@ export default function BookingScreen() {
     }
   };
 
-  const fetchAvailableDates = async (hall: string) => {
-    try {
-      if (!isConnected) {
-        Alert.alert(
-          "Error",
-          "No internet connection. Please check your network settings."
-        );
-        return;
-      }
+  const formatDate = (date: Date): FormattedDate => {
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const months = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
 
-      const response = await fetch(
-        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.MOVIES}/${movieId}/halls/${hall}/dates`
-      );
-
-      if (!response.ok) {
-        throw new Error(`Could not fetch dates (status ${response.status})`);
-      }
-
-      const datesData = await response.json();
-      setAvailableDates(datesData);
-    } catch (error) {
-      console.error("Error fetching available dates:", error);
-      Alert.alert("Error", "Failed to load available dates. Please try again.");
-    }
-  };
-
-  const fetchScreening = async () => {
-    if (!selectedHall || !selectedDate) return;
-
-    try {
-      const response = await fetch(
-        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SCREENINGS}/${movieId}?hall=${selectedHall}&date=${selectedDate}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`Screening not found (status ${response.status})`);
-      }
-
-      const data = await response.json();
-      setScreening(data);
-
-      // Clear selected seats when changing screening
-      setSelectedSeats([]);
-
-      await fetchSeats(movieId, selectedHall, selectedDate);
-    } catch (error) {
-      console.error("Error fetching screening data:", error);
-      Alert.alert(
-        "Error",
-        "Could not load screening information. Please try again."
-      );
-    }
+    return {
+      dayName: days[date.getDay()],
+      dayNumber: date.getDate(),
+      month: months[date.getMonth()],
+      fullDate: `${date.getFullYear()}-${(date.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")}`,
+    };
   };
 
   const fetchSeats = async (movieId: number, hall: string, date: string) => {
     try {
       setLoadingSeats(true);
 
-      // Check if we have cached seats for this combination
       const cacheKey = `${movieId}-${hall}-${date}`;
       if (seatCache[cacheKey]) {
         setSeats(seatCache[cacheKey]);
@@ -185,7 +199,6 @@ export default function BookingScreen() {
         return;
       }
 
-      // No internet connection
       if (!isConnected) {
         setLoadingSeats(false);
         setError("No internet connection. Cannot load seat information.");
@@ -193,7 +206,7 @@ export default function BookingScreen() {
       }
 
       const response = await fetch(
-        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SCREENINGS}/${movieId}/seats?hall=${hall}&date=${date}`
+        `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.SCREENINGS}/${movieId}/seats?hall=${selectedHall}&date=${selectedDate}`
       );
 
       if (!response.ok) {
@@ -202,7 +215,6 @@ export default function BookingScreen() {
 
       const seatsData = await response.json();
 
-      // Update the seat cache
       setSeatCache((prevCache) => ({
         ...prevCache,
         [cacheKey]: seatsData,
@@ -217,32 +229,52 @@ export default function BookingScreen() {
     }
   };
 
-  const handleHallSelect = (hall: string) => {
-    // Clear selected seats when hall changes
+  const handleLocationSelect = (location: string) => {
     setSelectedSeats([]);
-    setSelectedHall(hall);
-    setHallModalVisible(false);
+    setSelectedLocation(location);
     setSeats([]);
     setSubtotal(0);
-    fetchAvailableDates(hall);
-  };
 
-  const handleDateSelect = (date: string) => {
-    // Clear selected seats when date changes
-    setSelectedSeats([]);
-    setSelectedDate(date);
-    setSubtotal(0);
-    setDateModalVisible(false);
-
-    if (selectedHall && date) {
-      fetchScreeningWithParams(movieId, selectedHall, date);
+    if (selectedHall && selectedDate && location && selectedTimeSlot) {
+      fetchScreeningWithParams(movieId, selectedHall, location, selectedDate);
     }
   };
 
-  // Add this helper function
+  const handleHallSelect = (hall: string) => {
+    setSelectedSeats([]);
+    setSelectedHall(hall);
+    setSeats([]);
+    setSubtotal(0);
+
+    if (hall && selectedDate && selectedLocation && selectedTimeSlot) {
+      fetchScreeningWithParams(movieId, hall, selectedLocation, selectedDate);
+    }
+  };
+
+  const handleDateSelect = (date: string) => {
+    setSelectedSeats([]);
+    setSelectedDate(date);
+    setSubtotal(0);
+
+    if (selectedHall && date && selectedLocation && selectedTimeSlot) {
+      fetchScreeningWithParams(movieId, selectedHall, selectedLocation, date);
+    }
+  };
+
+  const handleTimeSlotSelect = (timeSlot: string) => {
+    setSelectedTimeSlot(timeSlot);
+    setSelectedSeats([]);
+    setSubtotal(0);
+
+    if (selectedHall && selectedDate && selectedLocation && timeSlot) {
+      fetchScreeningWithParams(movieId, selectedHall, selectedLocation, selectedDate);
+    }
+  };
+
   const fetchScreeningWithParams = async (
     movieId: number,
     hall: string,
+    location: string,
     date: string
   ) => {
     try {
@@ -304,9 +336,10 @@ export default function BookingScreen() {
         id: `booking-${Date.now()}`,
         movie,
         screening,
+        location: selectedLocation ? selectedLocation : "",
         seats: selectedSeats,
         bookingTime: Date.now(),
-        subtotal: subtotal
+        subtotal: subtotal,
       };
 
       const existingBookingsJson = await AsyncStorage.getItem("bookings");
@@ -320,27 +353,35 @@ export default function BookingScreen() {
       );
 
       router.push(`/others/${booking.id}`);
-
-      // Alert.alert("Success", "Your booking has been confirmed!", [
-      //   {
-      //     text: "View My Bookings",
-      //     onPress: () => router.push("/(tabs)/bookings"),
-      //   },
-      //   {
-      //     text: "Back to Movies",
-      //     onPress: () => router.push("/"),
-      //   },
-      // ]);
     } catch (error) {
       console.error("Error saving booking:", error);
       Alert.alert("Error", "Something went wrong while booking");
     }
   };
 
+  const updatedSeatsContainerStyle = {
+    ...bookingStyles.seatsContainer,
+    flexDirection: "column",
+    flexWrap: "nowrap",
+    alignItems: "center",
+    justifyContent: "",
+    paddingVertical: 10,
+  };
+
+  const renderScreen = () => {
+    return (
+      <ThemedView style={bookingStyles.screenContainer}>
+        <ThemedView style={bookingStyles.screen}>
+          <ThemedText style={bookingStyles.screenText}>Screen</ThemedText>
+        </ThemedView>
+      </ThemedView>
+    );
+  };
+
   const renderSeats = () => {
     if (loadingSeats) {
       return (
-        <ThemedView style={styles.loadingContainer}>
+        <ThemedView style={bookingStyles.loadingContainer}>
           <ActivityIndicator
             size="small"
             color={Colors[colorScheme ?? "light"].tint}
@@ -352,7 +393,7 @@ export default function BookingScreen() {
 
     if (!seats || seats.length === 0) {
       return (
-        <ThemedView style={styles.emptyContainer}>
+        <ThemedView style={bookingStyles.emptyContainer}>
           <ThemedText>No seats available for this screening</ThemedText>
         </ThemedView>
       );
@@ -371,9 +412,9 @@ export default function BookingScreen() {
     const sortedRowKeys = Object.keys(rows).sort();
 
     return sortedRowKeys.map((row) => (
-      <ThemedView key={row} style={styles.row}>
-        <ThemedText style={styles.rowLabel}>{row}</ThemedText>
-        <ThemedView style={styles.seatsRow}>
+      <ThemedView key={row} style={bookingStyles.row}>
+        <ThemedText style={bookingStyles.rowLabel}>{row}</ThemedText>
+        <ThemedView style={bookingStyles.seatsRow}>
           {rows[row]
             .sort((a, b) => a.number - b.number)
             .map((seat) => {
@@ -384,33 +425,75 @@ export default function BookingScreen() {
                 <TouchableOpacity
                   key={seat.id}
                   style={[
-                    styles.seat,
-                    isBooked && styles.bookedSeat,
-                    isSelected && styles.selectedSeat,
+                    bookingStyles.seat,
+                    isBooked && bookingStyles.bookedSeat,
+                    isSelected && bookingStyles.selectedSeat,
                   ]}
                   disabled={isBooked}
                   onPress={() => toggleSeatSelection(seat.id)}
                 >
-                  <ThemedText
-                    style={[
-                      styles.seatNumber,
-                      isBooked && styles.bookedSeatText,
-                      isSelected && styles.selectedSeatText,
-                    ]}
-                  >
-                    {seat.number}
-                  </ThemedText>
+                  {isBooked ? (
+                    <Feather name="x" size={12} color="#999" />
+                  ) : (
+                    <ThemedText
+                      style={[
+                        bookingStyles.seatNumber,
+                        isSelected && bookingStyles.selectedSeatText,
+                      ]}
+                    >
+                      {seat.number}
+                    </ThemedText>
+                  )}
                 </TouchableOpacity>
               );
             })}
         </ThemedView>
+        <ThemedText style={bookingStyles.rowLabel}>{row}</ThemedText>
       </ThemedView>
     ));
   };
 
+  const toggleLocationDropdown = () => {
+    setLocationDropdownVisible(!locationDropdownVisible);
+    Animated.timing(locationDropdownHeight, {
+      toValue: locationDropdownVisible ? 0 : 150,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+
+    // Close the other dropdown if open
+    if (!locationDropdownVisible && cinemaDropdownVisible) {
+      setCinemaDropdownVisible(false);
+      Animated.timing(cinemaDropdownHeight, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+    }
+  };
+
+  const toggleCinemaDropdown = () => {
+    setCinemaDropdownVisible(!cinemaDropdownVisible);
+    Animated.timing(cinemaDropdownHeight, {
+      toValue: cinemaDropdownVisible ? 0 : 150,
+      duration: 300,
+      useNativeDriver: false,
+    }).start();
+
+    // Close the other dropdown if open
+    if (!cinemaDropdownVisible && locationDropdownVisible) {
+      setLocationDropdownVisible(false);
+      Animated.timing(locationDropdownHeight, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: false,
+      }).start();
+    }
+  };
+
   if (loading) {
     return (
-      <ThemedView style={[styles.container, styles.centered]}>
+      <ThemedView style={[bookingStyles.container, bookingStyles.centered]}>
         <ActivityIndicator
           size="large"
           color={Colors[colorScheme ?? "light"].tint}
@@ -421,26 +504,32 @@ export default function BookingScreen() {
 
   if (error) {
     return (
-      <ThemedView style={[styles.container, styles.centered]}>
-        <ThemedText style={styles.errorText}>{error}</ThemedText>
+      <ThemedView style={[bookingStyles.container, bookingStyles.centered]}>
+        <ThemedText style={bookingStyles.errorText}>{error}</ThemedText>
         <TouchableOpacity
-          style={styles.backButton}
+          style={bookingStyles.backButton}
           onPress={() => router.back()}
         >
-          <ThemedText type="defaultSemiBold" style={styles.backButtonText}>
+          <ThemedText
+            type="defaultSemiBold"
+            style={bookingStyles.backButtonText}
+          >
             Go Back
           </ThemedText>
         </TouchableOpacity>
         {isConnected && (
           <TouchableOpacity
-            style={styles.retryButton}
+            style={bookingStyles.retryButton}
             onPress={() => {
               setLoading(true);
               setError(null);
               handleRetry();
             }}
           >
-            <ThemedText type="defaultSemiBold" style={styles.retryButtonText}>
+            <ThemedText
+              type="defaultSemiBold"
+              style={bookingStyles.retryButtonText}
+            >
               Retry
             </ThemedText>
           </TouchableOpacity>
@@ -451,13 +540,16 @@ export default function BookingScreen() {
 
   if (!movie) {
     return (
-      <ThemedView style={[styles.container, styles.centered]}>
+      <ThemedView style={[bookingStyles.container, bookingStyles.centered]}>
         <ThemedText>Movie not found</ThemedText>
         <TouchableOpacity
-          style={styles.backButton}
+          style={bookingStyles.backButton}
           onPress={() => router.back()}
         >
-          <ThemedText type="defaultSemiBold" style={styles.backButtonText}>
+          <ThemedText
+            type="defaultSemiBold"
+            style={bookingStyles.backButtonText}
+          >
             Go Back
           </ThemedText>
         </TouchableOpacity>
@@ -466,397 +558,361 @@ export default function BookingScreen() {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title">{movie.title}</ThemedText>
+    <ThemedView style={{ flex: 1 }}>
+      {/* Header with back button */}
+      <ThemedView style={bookingStyles.darkHeader}>
+        <TouchableOpacity
+          style={bookingStyles.backButtonOverlay}
+          onPress={() => router.back()}
+          activeOpacity={0.7}
+        >
+          <AntDesign
+            name="arrowleft"
+            size={24}
+            color={colorScheme === "dark" ? "white" : "black"}
+          />
+        </TouchableOpacity>
+        <ThemedText type="title" style={bookingStyles.darkHeaderTitle}>
+          Ticket Booking
+        </ThemedText>
       </ThemedView>
 
-      <ThemedView style={styles.pickerSection}>
-        <ThemedText type="defaultSemiBold" style={styles.sectionTitle}>
-          Select Hall and Date
+      <ScrollView style={bookingStyles.darkContainer}>
+        <ThemedText style={bookingStyles.darkInstructions}>
+          Where would you like to see the movie? Kindly select as appropriate
         </ThemedText>
 
-        {/* Hall Picker */}
-        <TouchableOpacity
-          style={styles.pickerButton}
-          onPress={() => setHallModalVisible(true)}
-        >
-          <ThemedText>
-            {selectedHall ? `Hall: ${selectedHall}` : "Select Hall"}
-          </ThemedText>
-        </TouchableOpacity>
-
-        {/* Date Picker (enabled only when hall is selected) */}
-        <TouchableOpacity
-          style={[styles.pickerButton, !selectedHall && styles.disabledButton]}
-          onPress={() => selectedHall && setDateModalVisible(true)}
-          disabled={!selectedHall}
-        >
-          <ThemedText>
-            {selectedDate ? `Date: ${selectedDate}` : "Select Date"}
-          </ThemedText>
-        </TouchableOpacity>
-      </ThemedView>
-
-      {/* Hall Modal */}
-      <Modal
-        visible={hallModalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setHallModalVisible(false)}
-      >
-        <ThemedView style={styles.modalContainer}>
-          <ThemedView style={styles.modalContent}>
-            <ThemedText type="defaultSemiBold" style={styles.modalTitle}>
-              Select Hall
-            </ThemedText>
-            <FlatList
-              data={availableHalls}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.modalItem}
-                  onPress={() => handleHallSelect(item)}
-                >
-                  <ThemedText>{item}</ThemedText>
-                </TouchableOpacity>
-              )}
-            />
+        {/* Price Range Selection */}
+        <ThemedView style={bookingStyles.priceRangeContainer}>
+          {priceRanges.map((range, index) => (
             <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setHallModalVisible(false)}
-            >
-              <ThemedText style={styles.closeButtonText}>Cancel</ThemedText>
-            </TouchableOpacity>
-          </ThemedView>
-        </ThemedView>
-      </Modal>
-
-      {/* Date Modal */}
-      <Modal
-        visible={dateModalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => setDateModalVisible(false)}
-      >
-        <ThemedView style={styles.modalContainer}>
-          <ThemedView style={styles.modalContent}>
-            <ThemedText type="defaultSemiBold" style={styles.modalTitle}>
-              Select Date
-            </ThemedText>
-            {availableDates.length > 0 ? (
-              <FlatList
-                data={availableDates}
-                keyExtractor={(item) => item}
-                renderItem={({ item }) => (
-                  <TouchableOpacity
-                    style={styles.modalItem}
-                    onPress={() => handleDateSelect(item)}
-                  >
-                    <ThemedText>{item}</ThemedText>
-                  </TouchableOpacity>
-                )}
-              />
-            ) : (
-              <ThemedText style={styles.noDataText}>
-                No dates available for this hall
-              </ThemedText>
-            )}
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setDateModalVisible(false)}
-            >
-              <ThemedText style={styles.closeButtonText}>Cancel</ThemedText>
-            </TouchableOpacity>
-          </ThemedView>
-        </ThemedView>
-      </Modal>
-
-      {selectedHall && selectedDate && screening && (
-        <>
-          <ThemedView style={styles.screeningInfo}>
-            <ThemedText>
-              {screening.date} • {screening.time} • {screening.hall}
-            </ThemedText>
-          </ThemedView>
-
-          <ThemedView style={styles.legendContainer}>
-            <ThemedView style={styles.legendItem}>
-              <ThemedView style={[styles.legendSeat]} />
-              <ThemedText>Available</ThemedText>
-            </ThemedView>
-            <ThemedView style={styles.legendItem}>
-              <ThemedView style={[styles.legendSeat, styles.selectedSeat]} />
-              <ThemedText>Selected</ThemedText>
-            </ThemedView>
-            <ThemedView style={styles.legendItem}>
-              <ThemedView style={[styles.legendSeat, styles.bookedSeat]} />
-              <ThemedText>Booked</ThemedText>
-            </ThemedView>
-          </ThemedView>
-
-          <ThemedView style={styles.screenContainer}>
-            <ThemedView style={styles.screen}>
-              <ThemedText style={styles.screenText}>SCREEN</ThemedText>
-            </ThemedView>
-          </ThemedView>
-
-          <ThemedView style={styles.seatsContainer}>{renderSeats()}</ThemedView>
-
-          <ThemedView style={styles.footer}>
-            <ThemedView style={styles.summaryContainer}>
-              <ThemedText type="defaultSemiBold">
-                Selected Seats: {selectedSeats.length}
-              </ThemedText>
-              <ThemedText>
-                {selectedSeats.length > 0
-                  ? selectedSeats.join(", ")
-                  : "No seats selected"}
-              </ThemedText>
-              {selectedSeats.length > 0 && (
-                <ThemedView style={styles.subtotalContainer}>
-                  <ThemedText type="defaultSemiBold">
-                    Subtotal: ${subtotal.toFixed(2)}
-                  </ThemedText>
-                  <ThemedText>
-                    ${TICKET_PRICE.toFixed(2)} × {selectedSeats.length} tickets
-                  </ThemedText>
-                </ThemedView>
-              )}
-            </ThemedView>
-
-            <TouchableOpacity
+              key={index}
               style={[
-                styles.bookButton,
-                (selectedSeats.length === 0 || !isConnected) &&
-                  styles.disabledButton,
+                bookingStyles.priceRangeCard,
+                selectedPriceRange === range &&
+                  bookingStyles.selectedPriceRange,
               ]}
-              onPress={handleBooking}
-              disabled={selectedSeats.length === 0 || !isConnected}
+              onPress={() => setSelectedPriceRange(range)}
             >
-              <ThemedText type="defaultSemiBold" style={styles.bookButtonText}>
-                {isConnected
-                  ? selectedSeats.length > 0
-                    ? `Book Tickets ($${subtotal.toFixed(2)})`
-                    : "Book Tickets"
-                  : "Offline (Cannot Book)"}
+              <ThemedText style={bookingStyles.priceRangeTitle}>
+                Tickets from
+              </ThemedText>
+              <ThemedText style={bookingStyles.priceRangeValue}>
+                {range}
               </ThemedText>
             </TouchableOpacity>
-          </ThemedView>
-        </>
-      )}
+          ))}
+        </ThemedView>
 
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => router.push("/")}
-      >
-        <ThemedText type="defaultSemiBold" style={styles.backButtonText}>
-          Go Back
+        {/* Location Selection */}
+        <ThemedText style={bookingStyles.darkSectionTitle}>Location</ThemedText>
+        <ThemedView style={[bookingStyles.dropdownContainer, { zIndex: 1002 }]}>
+          <TouchableOpacity
+            style={bookingStyles.lightDropdown}
+            onPress={toggleLocationDropdown}
+          >
+            <ThemedText style={bookingStyles.lightDropdownText}>
+              {selectedLocation && selectedLocation.length > 0
+                ? selectedLocation
+                : "Select Location"}
+            </ThemedText>
+            <MaterialIcons
+              name={
+                locationDropdownVisible
+                  ? "keyboard-arrow-up"
+                  : "keyboard-arrow-down"
+              }
+              size={24}
+              color={colorScheme === "dark" ? "white" : "black"}
+            />
+          </TouchableOpacity>
+
+          {locationDropdownVisible && (
+            <Animated.View
+              style={[
+                bookingStyles.dropdownOptions,
+                { height: locationDropdownHeight },
+              ]}
+            >
+              <ScrollView nestedScrollEnabled={true}>
+                {["Bandar Utama", "Kuala Lumpur", "CyberJaya"].map(
+                  (location, index) => (
+                    <TouchableOpacity
+                      key={index}
+                      style={[
+                        bookingStyles.dropdownItem,
+                        selectedLocation === location &&
+                          bookingStyles.selectedDropdownItem,
+                      ]}
+                      onPress={() => {
+                        handleLocationSelect(location);
+                        toggleLocationDropdown();
+                      }}
+                    >
+                      <ThemedText
+                        style={[
+                          bookingStyles.dropdownItemText,
+                          selectedLocation === location &&
+                            bookingStyles.selectedDropdownItemText,
+                        ]}
+                      >
+                        {location}
+                      </ThemedText>
+                    </TouchableOpacity>
+                  )
+                )}
+              </ScrollView>
+            </Animated.View>
+          )}
+        </ThemedView>
+
+        {/* Cinema Hall Selection */}
+        <ThemedText style={bookingStyles.darkSectionTitle}>
+          Cinema Location
         </ThemedText>
-      </TouchableOpacity>
-    </ScrollView>
+        <ThemedView style={[bookingStyles.dropdownContainer, { zIndex: 1001 }]}>
+          <TouchableOpacity
+            style={bookingStyles.lightDropdown}
+            onPress={toggleCinemaDropdown}
+          >
+            <ThemedText style={bookingStyles.lightDropdownText}>
+              {selectedHall ? `${selectedHall}` : "Select Cinema Hall"}
+            </ThemedText>
+            <MaterialIcons
+              name={
+                cinemaDropdownVisible
+                  ? "keyboard-arrow-up"
+                  : "keyboard-arrow-down"
+              }
+              size={24}
+              color={colorScheme === "dark" ? "white" : "black"}
+            />
+          </TouchableOpacity>
+
+          {cinemaDropdownVisible && (
+            <Animated.View
+              style={[
+                bookingStyles.dropdownOptions,
+                { height: cinemaDropdownHeight },
+              ]}
+            >
+              <ScrollView nestedScrollEnabled={true}>
+                {availableHalls.map((hall, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={[
+                      bookingStyles.dropdownItem,
+                      selectedHall === hall &&
+                        bookingStyles.selectedDropdownItem,
+                    ]}
+                    onPress={() => {
+                      handleHallSelect(hall);
+                      toggleCinemaDropdown();
+                    }}
+                  >
+                    <ThemedText
+                      style={[
+                        bookingStyles.dropdownItemText,
+                        selectedHall === hall &&
+                          bookingStyles.selectedDropdownItemText,
+                      ]}
+                    >
+                      {hall}
+                    </ThemedText>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </Animated.View>
+          )}
+        </ThemedView>
+
+        {/* Date Selection */}
+        <ThemedText style={bookingStyles.darkSectionTitle}>
+          Select a date
+        </ThemedText>
+        <ThemedView style={bookingStyles.calendarHeader}>
+          <ThemedText style={bookingStyles.monthIndicator}>
+            •{" "}
+            {availableDates.length > 0
+              ? typeof availableDates[0] === "string"
+                ? formatDate(new Date(availableDates[0])).month
+                : availableDates[0].month
+              : new Date().toLocaleString("default", { month: "long" })}{" "}
+            •
+          </ThemedText>
+        </ThemedView>
+
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={bookingStyles.dateScrollView}
+          contentContainerStyle={bookingStyles.dateScrollViewContent}
+        >
+          {availableDates.map((date, index) => {
+            const formattedDate =
+              typeof date === "string" ? formatDate(new Date(date)) : date;
+            return (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  bookingStyles.dateCard,
+                  selectedDate === formattedDate.fullDate &&
+                    bookingStyles.selectedDateCard,
+                ]}
+                onPress={() => handleDateSelect(formattedDate.fullDate)}
+              >
+                <ThemedText style={bookingStyles.dayName}>
+                  {formattedDate.dayName}
+                </ThemedText>
+                <ThemedText style={bookingStyles.dayNumber}>
+                  {formattedDate.dayNumber}
+                </ThemedText>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        {/* Time Selection */}
+        <ThemedView style={bookingStyles.timeContainer}>
+          <ThemedText style={bookingStyles.darkSectionTitle}>
+            Available Time
+          </ThemedText>
+          <ThemedView style={bookingStyles.timeGrid}>
+            {availableTimeSlots.map((time, index) => (
+              <TouchableOpacity
+                key={index}
+                style={[
+                  bookingStyles.timeCard,
+                  selectedTimeSlot === time && bookingStyles.selectedTimeCard,
+                ]}
+                onPress={() => handleTimeSlotSelect(time)}
+              >
+                <ThemedText
+                  style={[
+                    bookingStyles.timeText,
+                    selectedTimeSlot === time && bookingStyles.selectedTimeText,
+                  ]}
+                >
+                  {time}
+                </ThemedText>
+              </TouchableOpacity>
+            ))}
+          </ThemedView>
+        </ThemedView>
+
+        {/* Seat Selection */}
+        <ThemedView style={bookingStyles.seatSelectionContainer}>
+          <ThemedText style={bookingStyles.darkSectionTitle}>
+            Select Seat
+          </ThemedText>
+
+          <ThemedView style={bookingStyles.seatLegend}>
+            <ThemedView style={bookingStyles.legendItemDark}>
+              <ThemedView style={bookingStyles.availableSeatIndicator} />
+              <ThemedText style={bookingStyles.legendTextDark}>
+                Available
+              </ThemedText>
+            </ThemedView>
+            <ThemedView style={bookingStyles.legendItemDark}>
+              <ThemedView style={bookingStyles.unavailableSeatIndicator}>
+                <Feather name="x" size={10} color="#999" />
+              </ThemedView>
+              <ThemedText style={bookingStyles.legendTextDark}>
+                Unavailable
+              </ThemedText>
+            </ThemedView>
+            <ThemedView style={bookingStyles.legendItemDark}>
+              <ThemedView style={bookingStyles.selectedSeatIndicator} />
+              <ThemedText style={bookingStyles.legendTextDark}>
+                Selected
+              </ThemedText>
+            </ThemedView>
+          </ThemedView>
+
+          {/* Seat map with screen */}
+          {loadingSeats ? (
+            <ActivityIndicator
+              color="white"
+              size="large"
+              style={{ marginVertical: 20 }}
+            />
+          ) : (
+            <ThemedView style={bookingStyles.seatMapContainer}>
+              {renderScreen()}
+              <ScrollView
+                horizontal={false}
+                style={{ maxHeight: 300 }}
+                contentContainerStyle={{ paddingBottom: 20 }}
+              >
+                <ThemedView style={updatedSeatsContainerStyle}>
+                  {renderSeats()}
+                </ThemedView>
+              </ScrollView>
+            </ThemedView>
+          )}
+
+          {/* Seat and Subtotal display */}
+          <ThemedView style={bookingStyles.seatSubtotalContainer}>
+            <ThemedView style={bookingStyles.selectedSeatsDisplay}>
+              {selectedSeats.length > 0 ? (
+                selectedSeats.map((seatId, index) => {
+                  // Extract row and number from seatId
+                  const seatParts = seatId.split("-");
+                  const rowLetter = seatParts[0]; // Row is the first part
+                  const seatNumber = seatParts[1]; // Seat number is the second part
+
+                  return (
+                    <ThemedView
+                      key={index}
+                      style={bookingStyles.selectedSeatTag}
+                    >
+                      <ThemedText style={bookingStyles.selectedSeatTagText}>
+                        {`${rowLetter}${seatNumber}`}
+                      </ThemedText>
+                    </ThemedView>
+                  );
+                })
+              ) : (
+                <ThemedText style={bookingStyles.noSeatsText}>SEAT</ThemedText>
+              )}
+            </ThemedView>
+            <ThemedView style={bookingStyles.subtotalDisplay}>
+              <ThemedText style={bookingStyles.subtotalText}>
+                SUB-TOTAL
+              </ThemedText>
+              <ThemedText style={bookingStyles.subtotalAmount}>
+                RM {subtotal.toLocaleString()}
+              </ThemedText>
+            </ThemedView>
+          </ThemedView>
+        </ThemedView>
+
+        {/* Action Buttons */}
+        <ThemedView style={bookingStyles.actionButtonsContainer}>
+          <TouchableOpacity
+            style={bookingStyles.lightCancelButton}
+            onPress={() => router.back()}
+          >
+            <ThemedText style={bookingStyles.lightCancelButtonText}>
+              Cancel
+            </ThemedText>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              bookingStyles.proceedButton,
+              (!selectedTimeSlot || selectedSeats.length === 0) &&
+                bookingStyles.disabledProceedButton,
+            ]}
+            onPress={handleBooking}
+            disabled={!selectedTimeSlot || selectedSeats.length === 0}
+          >
+            <ThemedText style={bookingStyles.proceedButtonText}>
+              Proceed
+            </ThemedText>
+          </TouchableOpacity>
+        </ThemedView>
+      </ScrollView>
+    </ThemedView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 60,
-  },
-  subtotalContainer: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#EEE",
-  },
-  centered: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  header: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  pickerSection: {
-    marginBottom: 24,
-  },
-  sectionTitle: {
-    marginBottom: 12,
-  },
-  pickerButton: {
-    padding: 16,
-    backgroundColor: "#808080",
-    borderRadius: 8,
-    marginBottom: 12,
-  },
-  screeningInfo: {
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalContent: {
-    width: "80%",
-    backgroundColor: "#808080",
-    borderRadius: 12,
-    padding: 20,
-    maxHeight: "70%",
-  },
-  modalTitle: {
-    fontSize: 18,
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  modalItem: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#EEE",
-  },
-  closeButton: {
-    marginTop: 16,
-    padding: 12,
-    backgroundColor: "#EEE",
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  closeButtonText: {
-    color: "#333",
-  },
-  noDataText: {
-    textAlign: "center",
-    marginVertical: 20,
-  },
-  disabledButton: {
-    opacity: 0.5,
-  },
-  legendContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 24,
-  },
-  legendItem: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  legendSeat: {
-    width: 20,
-    height: 20,
-    borderRadius: 4,
-    backgroundColor: "#DDD",
-    marginRight: 8,
-  },
-  screenContainer: {
-    alignItems: "center",
-    marginBottom: 32,
-  },
-  screen: {
-    width: "80%",
-    height: 30,
-    backgroundColor: "#999",
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  screenText: {
-    color: "#FFF",
-    fontSize: 12,
-  },
-  seatsContainer: {
-    marginBottom: 24,
-  },
-  row: {
-    flexDirection: "row",
-    marginBottom: 8,
-    alignItems: "center",
-  },
-  rowLabel: {
-    width: 20,
-    marginRight: 8,
-    textAlign: "center",
-  },
-  seatsRow: {
-    flex: 1,
-    flexDirection: "row",
-    justifyContent: "center",
-  },
-  seat: {
-    width: 30,
-    height: 30,
-    margin: 4,
-    borderRadius: 6,
-    backgroundColor: "#DDD",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  bookedSeat: {
-    backgroundColor: "grey",
-  },
-  selectedSeat: {
-    backgroundColor: Colors.light.tint,
-  },
-  seatNumber: {
-    fontSize: 12,
-  },
-  bookedSeatText: {
-    color: "#777",
-  },
-  selectedSeatText: {
-    color: "#FFF",
-  },
-  footer: {
-    marginVertical: 24,
-  },
-  summaryContainer: {
-    marginBottom: 16,
-  },
-  bookButton: {
-    backgroundColor: Colors.light.tint,
-    padding: 16,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  bookButtonText: {
-    color: "#FFF",
-  },
-  backButton: {
-    backgroundColor: "#DDD",
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-  },
-  backButtonText: {
-    color: "#333",
-  },
-  errorText: {
-    textAlign: "center",
-    marginBottom: 16,
-    padding: 16,
-  },
-  retryButton: {
-    backgroundColor: Colors.light.tint,
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 16,
-  },
-  retryButtonText: {
-    color: "#FFF",
-  },
-  loadingContainer: {
-    padding: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  emptyContainer: {
-    padding: 20,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

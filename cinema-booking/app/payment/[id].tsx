@@ -1,21 +1,23 @@
 import React, { useState, useEffect } from "react";
 import {
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
   Alert,
   ActivityIndicator,
   View,
+  Image,
+  TextInput,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Ionicons } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Booking } from "@/types";
+import { paymentStyles } from "@/app/styles/paymentStyles";
 
 export default function PaymentScreen() {
   const { id } = useLocalSearchParams();
@@ -26,9 +28,7 @@ export default function PaymentScreen() {
   const [booking, setBooking] = useState<Booking | null>(null);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
-    string | null
-  >(null);
+  const [promoCode, setPromoCode] = useState("");
 
   useEffect(() => {
     loadBooking();
@@ -55,38 +55,25 @@ export default function PaymentScreen() {
     }
   };
 
-  const handlePayment = async () => {
-    if (!selectedPaymentMethod) {
-      Alert.alert("Error", "Please select a payment method");
-      return;
+  const handleProceedToPayment = async () => {
+    try {
+      setProcessing(true);
+      // Navigate to payment method selection screen
+      router.push({
+        pathname: "/payment/transaction",
+        params: { id: bookingId },
+      });
+    } catch (error) {
+      console.error("Error proceeding to payment:", error);
+      Alert.alert("Error", "Failed to proceed to payment");
+    } finally {
+      setProcessing(false);
     }
-
-    router.push({
-      pathname: "/payment/transaction",
-      params: { method: selectedPaymentMethod, id: bookingId },
-    });
-
-    // Simulate payment processing
-    // setTimeout(() => {
-    //   setProcessing(false);
-
-    //   // Show success message
-    //   Alert.alert(
-    //     "Payment Successful",
-    //     "Your booking has been confirmed!",
-    //     [
-    //       {
-    //         text: "View My Bookings",
-    //         onPress: () => router.push("/(tabs)/bookings"),
-    //       },
-    //     ]
-    //   );
-    // }, 2000);
   };
 
   if (loading) {
     return (
-      <ThemedView style={[styles.container, styles.centered]}>
+      <ThemedView style={[paymentStyles.container, paymentStyles.centered]}>
         <ActivityIndicator
           size="large"
           color={Colors[colorScheme ?? "light"].tint}
@@ -97,13 +84,13 @@ export default function PaymentScreen() {
 
   if (!booking) {
     return (
-      <ThemedView style={[styles.container, styles.centered]}>
+      <ThemedView style={[paymentStyles.container, paymentStyles.centered]}>
         <ThemedText>Booking not found</ThemedText>
         <TouchableOpacity
-          style={styles.backButton}
+          style={paymentStyles.proceedButton}
           onPress={() => router.back()}
         >
-          <ThemedText type="defaultSemiBold" style={styles.backButtonText}>
+          <ThemedText style={paymentStyles.proceedButtonText}>
             Go Back
           </ThemedText>
         </TouchableOpacity>
@@ -111,341 +98,267 @@ export default function PaymentScreen() {
     );
   }
 
-  // Calculate the total amount
   const ticketTotal = booking.subtotal || 0;
-  const fnbTotal = booking.fnbTotal || 0;
-  const total = ticketTotal + fnbTotal;
+  const fnbTotal =
+    booking.fnbItems?.reduce(
+      (total, item) => total + item.price * item.quantity,
+      0
+    ) || 0;
+  const serviceCharge = 50;
+  const total = ticketTotal + fnbTotal + serviceCharge;
 
   return (
-    <ScrollView style={styles.container}>
-      <ThemedText style={styles.header}>Payment</ThemedText>
-
-      {/* Booking Summary */}
-      <ThemedView style={styles.summaryContainer}>
-        <ThemedText type="subtitle" style={styles.summaryTitle}>
+    <ThemedView style={paymentStyles.container}>
+      <ThemedView style={paymentStyles.darkHeader}>
+        <TouchableOpacity
+          style={paymentStyles.backButtonOverlay}
+          onPress={() => router.back()}
+          activeOpacity={0.7}
+        >
+          <AntDesign name="arrowleft" size={24} color="#fff" />
+        </TouchableOpacity>
+        <ThemedText style={paymentStyles.darkHeaderTitle}>
           Booking Summary
         </ThemedText>
+      </ThemedView>
 
-        <ThemedView style={styles.movieInfo}>
-          <ThemedText style={styles.movieTitle}>
-            {booking.movie.title}
-          </ThemedText>
-          <ThemedText>
-            {booking.screening.hall} • {booking.screening.date}
-          </ThemedText>
-          <ThemedText>{booking.screening.time}</ThemedText>
-        </ThemedView>
-
-        <ThemedView style={styles.detailsRow}>
-          <ThemedText>Seats</ThemedText>
-          <ThemedText>{booking.seats.join(", ")}</ThemedText>
-        </ThemedView>
-
-        {booking.fnbItems && booking.fnbItems.length > 0 && (
-          <ThemedView style={styles.fnbContainer}>
-            <ThemedText style={styles.fnbTitle}>Food & Beverages</ThemedText>
-            {booking.fnbItems.map((item, index) => (
-              <ThemedView key={index} style={styles.fnbItem}>
-                <ThemedText>
-                  {item.name} x{item.quantity}
+      <ScrollView>
+        <ThemedView style={paymentStyles.summaryContainer}>
+          <ThemedView style={paymentStyles.ticketContainer}>
+            {/* Movie Info Section */}
+            <ThemedView style={paymentStyles.movieInfoContainer}>
+              <ThemedView style={paymentStyles.posterContainer}>
+                {booking.movie.posterUrl && (
+                  <Image
+                    source={{ uri: booking.movie.posterUrl }}
+                    style={paymentStyles.posterImage}
+                    resizeMode="cover"
+                  />
+                )}
+              </ThemedView>
+              <ThemedView style={paymentStyles.movieInfo}>
+                <ThemedText style={paymentStyles.movieTitle}>
+                  {booking.movie.title}
                 </ThemedText>
-                <ThemedText>
-                  ${(item.price * item.quantity).toFixed(2)}
+                <ThemedView style={paymentStyles.movieDetailsGrid}>
+                  <ThemedView style={paymentStyles.movieDetailItem}>
+                    <ThemedText style={paymentStyles.movieGenre}>
+                      {booking.movie.genre}
+                    </ThemedText>
+                  </ThemedView>
+                  <ThemedView style={paymentStyles.movieDetailItem}>
+                    <ThemedText style={paymentStyles.movieDuration}>
+                      {booking.movie.duration}
+                    </ThemedText>
+                  </ThemedView>
+                  <ThemedView style={paymentStyles.movieDetailItem}>
+                    <ThemedText style={paymentStyles.movieLanguage}>
+                      English, IMDb 3D
+                    </ThemedText>
+                  </ThemedView>
+                  <ThemedView style={paymentStyles.movieDetailItem}>
+                    <ThemedText style={paymentStyles.ticketType}>
+                      Classic Tickets
+                    </ThemedText>
+                  </ThemedView>
+                </ThemedView>
+              </ThemedView>
+            </ThemedView>
+
+            {/* Dashed Line */}
+            <ThemedView style={paymentStyles.dashedLineContainer}>
+              <ThemedView
+                style={[paymentStyles.circleCut, paymentStyles.leftCircle]}
+              />
+              <ThemedView style={paymentStyles.dashedLine} />
+              <ThemedView
+                style={[paymentStyles.circleCut, paymentStyles.rightCircle]}
+              />
+            </ThemedView>
+
+            {/* Screening Info Section */}
+            <ThemedView style={paymentStyles.screeningInfoContainer}>
+              <ThemedView style={paymentStyles.cinemaContainer}>
+                <ThemedText style={paymentStyles.cinemaLabel}>
+                  Cinema
+                </ThemedText>
+                <ThemedText style={paymentStyles.cinemaValue}>
+                  {booking.location} : {booking.screening.hall}
                 </ThemedText>
               </ThemedView>
-            ))}
-          </ThemedView>
-        )}
+              <ThemedView style={paymentStyles.screeningInfoGrid}>
+                <ThemedView style={paymentStyles.gridItem}>
+                  <ThemedText style={paymentStyles.infoLabel}>Date</ThemedText>
+                  <ThemedText style={paymentStyles.infoValue}>
+                    {booking.screening.date}
+                  </ThemedText>
+                </ThemedView>
 
-        <ThemedView style={styles.priceBreakdown}>
-          <ThemedView style={styles.priceRow}>
-            <ThemedText>Tickets Subtotal</ThemedText>
-            <ThemedText>${ticketTotal.toFixed(2)}</ThemedText>
-          </ThemedView>
+                <ThemedView style={paymentStyles.gridItem}>
+                  <ThemedText style={paymentStyles.infoLabel}>Seat</ThemedText>
+                  <ThemedText style={paymentStyles.infoValue}>
+                    {booking.seats.join(", ")}
+                  </ThemedText>
+                </ThemedView>
 
-          {fnbTotal > 0 && (
-            <ThemedView style={styles.priceRow}>
-              <ThemedText>Food & Beverages</ThemedText>
-              <ThemedText>${fnbTotal.toFixed(2)}</ThemedText>
+                <ThemedView style={paymentStyles.gridItem}>
+                  <ThemedText style={paymentStyles.infoLabel}>Start</ThemedText>
+                  <ThemedText style={paymentStyles.infoValue}>
+                    {booking.screening.time}
+                  </ThemedText>
+                </ThemedView>
+
+                <ThemedView style={paymentStyles.gridItem}>
+                  <ThemedText style={paymentStyles.infoLabel}>End</ThemedText>
+                  <ThemedText style={paymentStyles.infoValue}>
+                    {booking.movie.duration
+                      ? calculateEndTime(
+                          booking.screening.time,
+                          booking.movie.duration
+                        )
+                      : "0"}
+                  </ThemedText>
+                </ThemedView>
+              </ThemedView>
             </ThemedView>
-          )}
+          </ThemedView>
 
-          <ThemedView style={styles.totalRow}>
-            <ThemedText type="defaultSemiBold">Total</ThemedText>
-            <ThemedText type="defaultSemiBold">${total.toFixed(2)}</ThemedText>
+          <ThemedView style={paymentStyles.gap}></ThemedView>
+
+          {/* Tickets Section */}
+          <ThemedView style={paymentStyles.paymentContainer}>
+            <ThemedView style={paymentStyles.ticketsContainer}>
+              <ThemedText style={paymentStyles.sectionTitle}>
+                Tickets
+              </ThemedText>
+              <ThemedView style={paymentStyles.ticketRow}>
+                <ThemedText style={paymentStyles.ticketLabel}>
+                  Classic tickets ({booking.seats.length || 2})
+                </ThemedText>
+                <ThemedText style={paymentStyles.ticketPrice}>
+                  RM {ticketTotal.toFixed(0)}
+                </ThemedText>
+              </ThemedView>
+            </ThemedView>
+            <ThemedView style={paymentStyles.fnbContainer}>
+              <ThemedText style={paymentStyles.sectionTitle}>
+                Food & Beverage
+              </ThemedText>
+              <ThemedView style={paymentStyles.fnbRow}>
+                <ThemedText style={paymentStyles.fnbLabel}>
+                  Fresh XL Combo [x2]
+                </ThemedText>
+                <ThemedText style={paymentStyles.fnbPrice}>
+                  RM {fnbTotal.toFixed(0)}
+                </ThemedText>
+              </ThemedView>
+            </ThemedView>
+            <ThemedView style={paymentStyles.chargesContainer}>
+              <ThemedText style={paymentStyles.sectionTitle}>
+                Charges
+              </ThemedText>
+              <ThemedView style={paymentStyles.ticketRow}>
+                <ThemedText style={paymentStyles.ticketLabel}>
+                  Service charge
+                </ThemedText>
+                <ThemedText style={paymentStyles.ticketPrice}>
+                  RM {serviceCharge.toFixed(0)}
+                </ThemedText>
+              </ThemedView>
+            </ThemedView>
+            <ThemedView style={paymentStyles.promoContainer}>
+              <ThemedText style={paymentStyles.promoLabel}>
+                Promo Code
+              </ThemedText>
+              <TextInput
+                style={paymentStyles.promoInput}
+                value={promoCode}
+                onChangeText={setPromoCode}
+                placeholder="Enter code"
+                placeholderTextColor="#666"
+              />
+            </ThemedView>
+            <ThemedView style={paymentStyles.totalContainer}>
+              <ThemedText style={paymentStyles.totalLabel}>
+                Total Amount Payable
+              </ThemedText>
+              <ThemedText style={paymentStyles.totalPrice}>
+                RM {total.toFixed(0) || "10,450"}
+              </ThemedText>
+            </ThemedView>
           </ThemedView>
         </ThemedView>
-      </ThemedView>
 
-      {/* Payment Methods */}
-      <ThemedView style={styles.paymentMethodsContainer}>
-        <ThemedText type="subtitle" style={styles.paymentTitle}>
-          Select Payment Method
-        </ThemedText>
-
+        {/* Proceed to Payment Button */}
         <TouchableOpacity
           style={[
-            styles.paymentOption,
-            selectedPaymentMethod === "debit" && styles.selectedPayment,
+            paymentStyles.proceedButton,
+            paymentStyles.activeButton,
+            processing && paymentStyles.disabledButton,
           ]}
-          onPress={() => setSelectedPaymentMethod("debit")}
-        >
-          <View style={styles.paymentIconContainer}>
-            <Ionicons name="card-outline" size={24} color={Colors.light.tint} />
-          </View>
-          <View style={styles.paymentTextContainer}>
-            <ThemedText style={styles.paymentOptionText}>Debit Card</ThemedText>
-            <ThemedText style={styles.paymentDescription}>
-              Pay directly with your debit card
-            </ThemedText>
-          </View>
-          {selectedPaymentMethod === "debit" && (
-            <Ionicons
-              name="checkmark-circle"
-              size={24}
-              color={Colors.light.tint}
-            />
-          )}
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.paymentOption,
-            selectedPaymentMethod === "bank" && styles.selectedPayment,
-          ]}
-          onPress={() => setSelectedPaymentMethod("bank")}
-        >
-          <View style={styles.paymentIconContainer}>
-            <Ionicons
-              name="business-outline"
-              size={24}
-              color={Colors.light.tint}
-            />
-          </View>
-          <View style={styles.paymentTextContainer}>
-            <ThemedText style={styles.paymentOptionText}>
-              Bank Transfer
-            </ThemedText>
-            <ThemedText style={styles.paymentDescription}>
-              Pay via direct bank transfer
-            </ThemedText>
-          </View>
-          {selectedPaymentMethod === "bank" && (
-            <Ionicons
-              name="checkmark-circle"
-              size={24}
-              color={Colors.light.tint}
-            />
-          )}
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.paymentOption,
-            selectedPaymentMethod === "crypto" && styles.selectedPayment,
-          ]}
-          onPress={() => setSelectedPaymentMethod("crypto")}
-        >
-          <View style={styles.paymentIconContainer}>
-            <Ionicons name="logo-bitcoin" size={24} color={Colors.light.tint} />
-          </View>
-          <View style={styles.paymentTextContainer}>
-            <ThemedText style={styles.paymentOptionText}>
-              CryptoWallet
-            </ThemedText>
-            <ThemedText style={styles.paymentDescription}>
-              Pay with cryptocurrency
-            </ThemedText>
-          </View>
-          {selectedPaymentMethod === "crypto" && (
-            <Ionicons
-              name="checkmark-circle"
-              size={24}
-              color={Colors.light.tint}
-            />
-          )}
-        </TouchableOpacity>
-      </ThemedView>
-
-      {/* Action Buttons */}
-      <ThemedView style={styles.actions}>
-        <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={() => router.back()}
+          onPress={handleProceedToPayment}
           disabled={processing}
-        >
-          <ThemedText style={styles.cancelButtonText}>Cancel</ThemedText>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.payButton,
-            (!selectedPaymentMethod || processing) && styles.disabledButton,
-          ]}
-          onPress={handlePayment}
-          disabled={!selectedPaymentMethod || processing}
         >
           {processing ? (
             <ActivityIndicator size="small" color="#FFFFFF" />
           ) : (
-            <ThemedText style={styles.payButtonText}>
-              Pay ${total.toFixed(2)}
+            <ThemedText style={paymentStyles.proceedButtonText}>
+              Proceed to payment
             </ThemedText>
           )}
         </TouchableOpacity>
-      </ThemedView>
-    </ScrollView>
+      </ScrollView>
+    </ThemedView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    paddingTop: 60,
-  },
-  centered: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-  },
-  summaryContainer: {
-    marginBottom: 24,
-    padding: 16,
-    borderRadius: 12,
-  },
-  summaryTitle: {
-    marginBottom: 16,
-    fontWeight: "bold",
-  },
-  movieInfo: {
-    marginBottom: 16,
-  },
-  movieTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
-  detailsRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  fnbContainer: {
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#ddd",
-  },
-  fnbTitle: {
-    fontWeight: "600",
-    marginBottom: 8,
-  },
-  fnbItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 4,
-  },
-  priceBreakdown: {
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#ddd",
-  },
-  priceRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  totalRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#ddd",
-  },
-  paymentMethodsContainer: {
-    marginBottom: 24,
-  },
-  paymentTitle: {
-    marginBottom: 16,
-  },
-  paymentOption: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderRadius: 8,
-    backgroundColor: "grey",
-  },
-  paymentIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#e6f7ff",
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 16,
-  },
-  paymentTextContainer: {
-    flex: 1,
-  },
-  selectedPayment: {
-    borderColor: Colors.light.tint,
-    backgroundColor: "#e6f7ff",
-  },
-  paymentOptionText: {
-    fontWeight: "500",
-    marginBottom: 4,
-  },
-  paymentDescription: {
-    fontSize: 12,
-    color: "#666",
-  },
-  actions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 30,
-  },
-  cancelButton: {
-    flex: 1,
-    padding: 16,
-    marginRight: 8,
-    borderRadius: 8,
-    backgroundColor: "#ddd",
-    alignItems: "center",
-  },
-  cancelButtonText: {
-    fontWeight: "600",
-  },
-  payButton: {
-    flex: 2,
-    padding: 16,
-    borderRadius: 8,
-    backgroundColor: Colors.light.tint,
-    alignItems: "center",
-  },
-  payButtonText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-  disabledButton: {
-    opacity: 0.5,
-  },
-  backButton: {
-    backgroundColor: "#DDD",
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 16,
-  },
-  backButtonText: {
-    color: "#333",
-  },
-});
+// Helper function to calculate end time in 24-hour format
+function calculateEndTime(startTime: string, duration: string): string {
+  try {
+    const durationMatch = duration.match(/(\d+)h\s*(\d+)m/);
+    if (!durationMatch) return "Unknown";
+
+    const hours = parseInt(durationMatch[1]);
+    const minutes = parseInt(durationMatch[2]);
+
+    const timeMatch12Hour = startTime.match(/(\d+):(\d+)([AP]M)/);
+    const timeMatch24Hour = startTime.match(/(\d+):(\d+)/);
+
+    let startHour, startMinute;
+
+    if (timeMatch12Hour) {
+      startHour = parseInt(timeMatch12Hour[1]);
+      startMinute = parseInt(timeMatch12Hour[2]);
+      const period = timeMatch12Hour[3];
+
+      if (period === "PM" && startHour < 12) {
+        startHour += 12;
+      } else if (period === "AM" && startHour === 12) {
+        startHour = 0;
+      }
+    } else if (timeMatch24Hour) {
+      startHour = parseInt(timeMatch24Hour[1]);
+      startMinute = parseInt(timeMatch24Hour[2]);
+    } else {
+      return "Unknown";
+    }
+
+    // Calculate end time
+    let endHour = startHour + hours;
+    let endMinute = startMinute + minutes;
+
+    if (endMinute >= 60) {
+      endHour += Math.floor(endMinute / 60);
+      endMinute %= 60;
+    }
+
+    // Format output as 24-hour time
+    endHour = endHour % 24; // Handle day wrap-around
+    return `${endHour.toString().padStart(2, "0")}:${endMinute
+      .toString()
+      .padStart(2, "0")}`;
+  } catch (error) {
+    console.error("Error calculating end time:", error);
+    return "Unknown";
+  }
+}

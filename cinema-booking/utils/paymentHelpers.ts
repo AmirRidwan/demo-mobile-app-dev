@@ -1,4 +1,11 @@
-export const formatPaymentData = (paymentDetails) => {
+interface PaymentDetails {
+    cardNumber: string;
+    cvv: string;
+    expirationDate: string;
+    cardHolderName: string;
+}
+
+export const formatPaymentData = (paymentDetails: PaymentDetails): PaymentDetails => {
     return {
         cardNumber: paymentDetails.cardNumber.replace(/\s+/g, ''),
         cvv: paymentDetails.cvv,
@@ -7,7 +14,7 @@ export const formatPaymentData = (paymentDetails) => {
     };
 };
 
-export const isPaymentDataValid = (paymentDetails) => {
+export const isPaymentDataValid = (paymentDetails: PaymentDetails): boolean => {
     const { cardNumber, cvv, expirationDate } = paymentDetails;
     return (
         isValidCardNumber(cardNumber) &&
@@ -16,17 +23,17 @@ export const isPaymentDataValid = (paymentDetails) => {
     );
 };
 
-const isValidCardNumber = (number) => {
+export const isValidCardNumber = (number: string): boolean => {
     const regex = /^[0-9]{16}$/;
     return regex.test(number);
 };
 
-const isValidCVV = (cvv) => {
+export const isValidCVV = (cvv: string): boolean => {
     const regex = /^[0-9]{3,4}$/;
     return regex.test(cvv);
 };
 
-const isValidExpirationDate = (date) => {
+export const isValidExpirationDate = (date: string): boolean => {
     const [month, year] = date.split('/');
     const currentDate = new Date();
     const expirationDate = new Date(`20${year}`, month - 1);

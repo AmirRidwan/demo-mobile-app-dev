@@ -1,15 +1,18 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
   Alert,
   ActivityIndicator,
   Modal,
   FlatList,
+  Animated,
+  View,
+  Image,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
@@ -18,6 +21,9 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { Booking, FnBItem } from "@/types";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import API_CONFIG from "@/utils/api";
+import othersStyles from "@/app/styles/othersStyles";
+
+type TabType = "Combo" | "Food/Snacks" | "Beverages";
 
 export default function othersScreen() {
   const { id } = useLocalSearchParams();
@@ -26,9 +32,12 @@ export default function othersScreen() {
   const colorScheme = useColorScheme();
 
   const [booking, setBooking] = useState<Booking | null>(null);
-  const [selectedItems, setSelectedItems] = useState<{[key: string]: number}>({});
+  const [selectedItems, setSelectedItems] = useState<{ [key: string]: number }>(
+    {}
+  );
   const [fnbItems, setFnbItems] = useState<FnBItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<TabType>("Combo");
 
   const networkStatus = useNetworkStatus();
 
@@ -39,10 +48,10 @@ export default function othersScreen() {
 
   const loadBooking = async () => {
     try {
-      const bookingsJson = await AsyncStorage.getItem('bookings');
+      const bookingsJson = await AsyncStorage.getItem("bookings");
       if (bookingsJson) {
         const bookings: Booking[] = JSON.parse(bookingsJson);
-        const currentBooking = bookings.find(b => b.id === bookingId);
+        const currentBooking = bookings.find((b) => b.id === bookingId);
         if (currentBooking) {
           setBooking(currentBooking);
         } else {
@@ -51,7 +60,7 @@ export default function othersScreen() {
         }
       }
     } catch (error) {
-      console.error('Error loading booking:', error);
+      console.error("Error loading booking:", error);
       Alert.alert("Error", "Failed to load booking information");
     } finally {
       setLoading(false);
@@ -60,11 +69,28 @@ export default function othersScreen() {
 
   const fetchFnBItems = async () => {
     try {
-      const response = await fetch(API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.FNB_ITEMS);
+      const response = await fetch(
+        API_CONFIG.BASE_URL + API_CONFIG.ENDPOINTS.FNB_ITEMS
+      );
       const data = await response.json();
-      setFnbItems(data);
+
+      // Transform the data to match our UI needs
+      const transformedData = data.map((item: any) => {
+        // Map categories to match our tab types
+        let category: TabType = "Food/Snacks";
+        if (item.category === "combos") category = "Combo";
+        else if (item.category === "drinks") category = "Beverages";
+
+        return {
+          ...item,
+          category,
+        };
+      });
+
+      setFnbItems(transformedData);
     } catch (error) {
       console.error("Error fetching fnb items:", error);
+      setFnbItems([]);
     } finally {
       setLoading(false);
     }
@@ -101,6 +127,14 @@ export default function othersScreen() {
     const ticketTotal = booking?.subtotal || 0;
     const fnbTotal = calculateFnBTotal();
     return ticketTotal + fnbTotal;
+  };
+
+  // Calculate total number of items
+  const getTotalItemCount = () => {
+    return Object.values(selectedItems).reduce(
+      (sum, quantity) => sum + quantity,
+      0
+    );
   };
 
   const handleConfirm = async () => {
@@ -149,292 +183,249 @@ export default function othersScreen() {
     }
   };
 
-  const handleSkip = () => {
-    router.push(`/payment/${bookingId}`);
+  const handleSkip = async () => {
+    setSelectedItems({});
+
+    if (booking) {
+      try {
+        const updatedBooking = {
+          ...booking,
+          fnbItems: [],
+          fnbTotal: 0,
+          grandTotal: booking.subtotal || 0,
+        };
+
+        const bookingsJson = await AsyncStorage.getItem("bookings");
+        if (bookingsJson) {
+          const bookings: Booking[] = JSON.parse(bookingsJson);
+          const updatedBookings = bookings.map((b) =>
+            b.id === bookingId ? updatedBooking : b
+          );
+          await AsyncStorage.setItem(
+            "bookings",
+            JSON.stringify(updatedBookings)
+          );
+        }
+
+        router.push(`/payment/${bookingId}`);
+      } catch (error) {
+        console.error("Error updating booking when skipping:", error);
+        Alert.alert("Error", "Failed to update booking information");
+        router.push(`/payment/${bookingId}`);
+      }
+    } else {
+      router.push(`/payment/${bookingId}`);
+    }
+  };
+
+  const renderFnBItems = (category: TabType) => {
+    const filteredItems = fnbItems.filter((item) => item.category === category);
+
+    const pairs = [];
+    for (let i = 0; i < filteredItems.length; i += 2) {
+      pairs.push(filteredItems.slice(i, i + 2));
+    }
+
+    return (
+      <ThemedView style={othersStyles.fnbGridContainer}>
+        {pairs.map((pair, index) => (
+          <ThemedView key={index} style={othersStyles.fnbRow}>
+            {pair.map((item) => (
+              <ThemedView key={item.id} style={othersStyles.fnbCardNew}>
+                <ThemedView style={othersStyles.fnbImageContainer}>
+                  {/* Placeholder for image */}
+                  <ThemedView style={othersStyles.fnbImagePlaceholder} />
+                </ThemedView>
+                <ThemedText style={othersStyles.fnbItemName}>
+                  {item.name}
+                </ThemedText>
+                <ThemedText style={othersStyles.fnbItemDescription}>
+                  {item.description}
+                </ThemedText>
+                <ThemedView style={othersStyles.fnbPriceRow}>
+                  <ThemedText style={othersStyles.fnbItemPrice}>
+                    RM
+                    {typeof item.price === "number"
+                      ? item.price.toLocaleString()
+                      : parseFloat(item.price).toLocaleString()}
+                  </ThemedText>
+                  <ThemedView style={othersStyles.quantityControlsNew}>
+                    {selectedItems[item.id] ? (
+                      <>
+                        <TouchableOpacity
+                          style={othersStyles.quantityButtonNew}
+                          onPress={() => handleRemoveItem(item.id)}
+                        >
+                          <ThemedText style={othersStyles.quantityBtnTextNew}>
+                            -
+                          </ThemedText>
+                        </TouchableOpacity>
+                        <ThemedText style={othersStyles.quantityTextNew}>
+                          {selectedItems[item.id]}
+                        </ThemedText>
+                        <TouchableOpacity
+                          style={othersStyles.quantityButtonNew}
+                          onPress={() => handleAddItem(item.id)}
+                        >
+                          <ThemedText style={othersStyles.quantityBtnTextNew}>
+                            +
+                          </ThemedText>
+                        </TouchableOpacity>
+                      </>
+                    ) : (
+                      <TouchableOpacity
+                        style={othersStyles.quantityButtonNew}
+                        onPress={() => handleAddItem(item.id)}
+                      >
+                        <ThemedText style={othersStyles.quantityBtnTextNew}>
+                          +
+                        </ThemedText>
+                      </TouchableOpacity>
+                    )}
+                  </ThemedView>
+                </ThemedView>
+              </ThemedView>
+            ))}
+            {pair.length === 1 && <View style={othersStyles.emptyCard} />}
+          </ThemedView>
+        ))}
+      </ThemedView>
+    );
   };
 
   if (loading) {
     return (
-      <ThemedView style={styles.loadingContainer}>
-        <ThemedText>Loading booking information...</ThemedText>
+      <ThemedView style={othersStyles.loadingContainer}>
+        <ActivityIndicator
+          size="large"
+          color={Colors[colorScheme ?? "light"].tint}
+        />
+        <ThemedText style={{ marginTop: 10 }}>
+          Loading booking information...
+        </ThemedText>
       </ThemedView>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <ThemedText style={styles.header}>Food & Beverages</ThemedText>
-
-      {/* Booking Summary */}
-      {booking && (
-        <ThemedView style={styles.bookingSummary}>
-          <ThemedText style={styles.movieTitle}>
-            {booking.movie.title}
-          </ThemedText>
-          <ThemedText>
-            {booking.screening.hall} •{" "}
-            {new Date(booking.screening.date).toLocaleDateString()}
-          </ThemedText>
-          <ThemedText>
-            {booking.seats.length}{" "}
-            {booking.seats.length === 1 ? "Seat" : "Seats"}:{" "}
-            {booking.seats.join(", ")}
-          </ThemedText>
-          <ThemedText style={styles.subtotalText}>
-            Ticket Subtotal: ${booking.subtotal.toFixed(2) || "0.00"}
-          </ThemedText>
-        </ThemedView>
-      )}
-
-      {/* FnB Categories */}
-      <ThemedText style={styles.sectionTitle}>Snacks</ThemedText>
-      <ThemedView style={styles.fnbList}>
-        {fnbItems
-          .filter((item) => item.category === "snacks")
-          .map((item) => (
-            <ThemedView key={item.id} style={styles.fnbItem}>
-              <ThemedView style={styles.itemDetails}>
-                <ThemedText style={styles.itemName}>{item.name}</ThemedText>
-                <ThemedText>${item.price.toFixed(2)}</ThemedText>
-              </ThemedView>
-              <ThemedView style={styles.quantityControls}>
-                {selectedItems[item.id] ? (
-                  <>
-                    <TouchableOpacity
-                      style={styles.quantityButton}
-                      onPress={() => handleRemoveItem(item.id)}
-                    >
-                      <ThemedText style={styles.quantityBtnText}>-</ThemedText>
-                    </TouchableOpacity>
-                    <ThemedText style={styles.quantityText}>
-                      {selectedItems[item.id]}
-                    </ThemedText>
-                  </>
-                ) : null}
-                <TouchableOpacity
-                  style={[styles.quantityButton, styles.addButton]}
-                  onPress={() => handleAddItem(item.id)}
-                >
-                  <ThemedText style={styles.quantityBtnText}>+</ThemedText>
-                </TouchableOpacity>
-              </ThemedView>
-            </ThemedView>
-          ))}
-      </ThemedView>
-
-      <ThemedText style={styles.sectionTitle}>Drinks</ThemedText>
-      <ThemedView style={styles.fnbList}>
-        {fnbItems
-          .filter((item) => item.category === "drinks")
-          .map((item) => (
-            <ThemedView key={item.id} style={styles.fnbItem}>
-              <ThemedView style={styles.itemDetails}>
-                <ThemedText style={styles.itemName}>{item.name}</ThemedText>
-                <ThemedText>${item.price.toFixed(2)}</ThemedText>
-              </ThemedView>
-              <ThemedView style={styles.quantityControls}>
-                {selectedItems[item.id] ? (
-                  <>
-                    <TouchableOpacity
-                      style={styles.quantityButton}
-                      onPress={() => handleRemoveItem(item.id)}
-                    >
-                      <ThemedText style={styles.quantityBtnText}>-</ThemedText>
-                    </TouchableOpacity>
-                    <ThemedText style={styles.quantityText}>
-                      {selectedItems[item.id]}
-                    </ThemedText>
-                  </>
-                ) : null}
-                <TouchableOpacity
-                  style={[styles.quantityButton, styles.addButton]}
-                  onPress={() => handleAddItem(item.id)}
-                >
-                  <ThemedText style={styles.quantityBtnText}>+</ThemedText>
-                </TouchableOpacity>
-              </ThemedView>
-            </ThemedView>
-          ))}
-      </ThemedView>
-
-      {/* Order Summary */}
-      <ThemedView style={styles.orderSummary}>
-        <ThemedText style={styles.summaryTitle}>Order Summary</ThemedText>
-        <ThemedView style={styles.summaryRow}>
-          <ThemedText>Tickets Subtotal</ThemedText>
-          <ThemedText>
-            ${booking?.subtotal.toFixed(2) || "0.00"}
-          </ThemedText>
-        </ThemedView>
-        <ThemedView style={styles.summaryRow}>
-          <ThemedText>Food & Beverages</ThemedText>
-          <ThemedText>${calculateFnBTotal().toFixed(2)}</ThemedText>
-        </ThemedView>
-        <ThemedView style={[styles.summaryRow, styles.totalRow]}>
-          <ThemedText style={styles.totalLabel}>Total</ThemedText>
-          <ThemedText style={styles.totalAmount}>
-            ${calculateTotal().toFixed(2)}
-          </ThemedText>
-        </ThemedView>
-      </ThemedView>
-
-      {/* Action Buttons */}
-      <ThemedView style={styles.actions}>
+    <ThemedView style={othersStyles.containerNew}>
+      {/* Header with back button */}
+      <View style={othersStyles.headerNew}>
         <TouchableOpacity
-          style={[styles.button, styles.skipButton]}
+          style={othersStyles.backButtonNew}
+          onPress={() => {
+            if (booking && booking.movie.id) {
+              router.push(`/booking/${booking.movie.id}`);
+            } else {
+              router.back();
+            }
+          }}
+        >
+          <AntDesign name="arrowleft" size={24} color="white" />
+        </TouchableOpacity>
+        <ThemedText style={othersStyles.headerTitleNew}>
+          Beverages & Food
+        </ThemedText>
+        <TouchableOpacity
+          style={othersStyles.skipButtonNew}
           onPress={handleSkip}
         >
-          <ThemedText style={styles.skipButtonText}>Skip</ThemedText>
+          <ThemedText style={othersStyles.skipTextNew}>Skip</ThemedText>
+        </TouchableOpacity>
+      </View>
+
+      {/* Tab Navigation - Updated to match movie details screen */}
+      <View style={othersStyles.tabContainerNew}>
+        <TouchableOpacity
+          style={[
+            othersStyles.tabButtonNew,
+            activeTab === "Combo" && othersStyles.activeTabNew,
+          ]}
+          onPress={() => setActiveTab("Combo")}
+        >
+          <ThemedText
+            style={[
+              othersStyles.tabTextNew,
+              activeTab === "Combo" && othersStyles.activeTabTextNew,
+            ]}
+          >
+            Combo
+          </ThemedText>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.button, styles.confirmButton]}
-          onPress={handleConfirm}
+          style={[
+            othersStyles.tabButtonNew,
+            activeTab === "Food/Snacks" && othersStyles.activeTabNew,
+          ]}
+          onPress={() => setActiveTab("Food/Snacks")}
         >
-          <ThemedText style={styles.confirmButtonText}>
-            Continue to Payment
+          <ThemedText
+            style={[
+              othersStyles.tabTextNew,
+              activeTab === "Food/Snacks" && othersStyles.activeTabTextNew,
+            ]}
+          >
+            Food/Snacks
+          </ThemedText>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            othersStyles.tabButtonNew,
+            activeTab === "Beverages" && othersStyles.activeTabNew,
+          ]}
+          onPress={() => setActiveTab("Beverages")}
+        >
+          <ThemedText
+            style={[
+              othersStyles.tabTextNew,
+              activeTab === "Beverages" && othersStyles.activeTabTextNew,
+            ]}
+          >
+            Beverages
+          </ThemedText>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView style={othersStyles.scrollViewNew}>
+        {/* FnB Items */}
+        {renderFnBItems(activeTab)}
+
+        {/* Subtotal Section - Updated to show total item count */}
+        <ThemedView style={othersStyles.seatSubtotalContainer}>
+          <ThemedView style={othersStyles.itemsDisplayNew}>
+            <ThemedText style={othersStyles.noItemsText}>ITEMS</ThemedText>
+            <ThemedText style={othersStyles.subtotalAmountNew}>
+              {getTotalItemCount()}
+            </ThemedText>
+          </ThemedView>
+
+          <ThemedView style={othersStyles.subtotalDisplayNew}>
+            <ThemedText style={othersStyles.subtotalTextNew}>
+              SUB-TOTAL
+            </ThemedText>
+            <ThemedText style={othersStyles.subtotalAmountNew}>
+              RM {calculateFnBTotal().toLocaleString()}
+            </ThemedText>
+          </ThemedView>
+        </ThemedView>
+      </ScrollView>
+
+      {/* Confirm Button */}
+      <ThemedView style={othersStyles.confirmButtonContainer}>
+        <TouchableOpacity
+          style={[
+            othersStyles.confirmButton,
+            Object.keys(selectedItems).length === 0 &&
+              othersStyles.disabledButton,
+          ]}
+          onPress={handleConfirm}
+          disabled={Object.keys(selectedItems).length === 0}
+        >
+          <ThemedText style={othersStyles.confirmButtonText}>
+            Confirm
           </ThemedText>
         </TouchableOpacity>
       </ThemedView>
-    </ScrollView>
+    </ThemedView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 16,
-  },
-  bookingSummary: {
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 20,
-  },
-  movieTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 4,
-  },
-  subtotalText: {
-    marginTop: 8,
-    fontWeight: "600",
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginVertical: 12,
-  },
-  fnbList: {
-    marginBottom: 16,
-  },
-  fnbItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    padding: 12,
-    marginBottom: 10,
-    borderRadius: 8,
-  },
-  itemImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-  },
-  itemDetails: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  itemName: {
-    fontSize: 16,
-    fontWeight: "500",
-    marginBottom: 4,
-  },
-  quantityControls: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  quantityButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  addButton: {
-    backgroundColor: Colors.light.tint,
-  },
-  quantityBtnText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "white",
-  },
-  quantityText: {
-    marginHorizontal: 12,
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  orderSummary: {
-    padding: 16,
-    borderRadius: 8,
-    marginVertical: 20,
-  },
-  summaryTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 12,
-  },
-  summaryRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  totalRow: {
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#dddddd",
-  },
-  totalLabel: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  totalAmount: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: Colors.light.tint,
-  },
-  actions: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 30,
-  },
-  button: {
-    borderRadius: 8,
-    padding: 16,
-    alignItems: "center",
-  },
-  skipButton: {
-    flex: 1,
-    marginRight: 8,
-    backgroundColor: "grey",
-  },
-  skipButtonText: {
-    fontWeight: "600",
-  },
-  confirmButton: {
-    flex: 2,
-    backgroundColor: Colors.light.tint,
-  },
-  confirmButtonText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-});

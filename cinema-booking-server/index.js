@@ -19,20 +19,28 @@ let movieCache = [];
 
 const demoFnB = [
   {
-    id: "combo-1",
-    name: "Movie Lovers Combo",
+    id: "combo-a",
+    name: "Combo A - Movie Lovers",
     price: 15.99,
     image: "https://images.unsplash.com/photo-1576028907930-ca659803d0ab?w=500",
     category: "combos",
     description: "Large popcorn, 2 medium drinks, and nachos",
   },
   {
-    id: "combo-2",
-    name: "Family Combo",
+    id: "combo-b",
+    name: "Combo B - Family Pack",
     price: 24.99,
     image: "https://images.unsplash.com/photo-1589656966895-2f33e7653819?w=500",
     category: "combos",
     description: "Jumbo popcorn, 4 medium drinks, and 2 hotdogs",
+  },
+  {
+    id: "combo-c",
+    name: "Combo C - Deluxe Date",
+    price: 19.99,
+    image: "https://images.unsplash.com/photo-1585647347483-22b66260dfff?w=500",
+    category: "combos",
+    description: "2 medium popcorns, 2 drinks, and candy selection",
   },
   {
     id: "popcorn-large",
@@ -167,32 +175,26 @@ async function generateScreenings(movieId) {
       parseInt(runtimeStr.split("h ")[1]?.split("m")[0]) || 0;
     const totalRuntime = runtimeHours * 60 + runtimeMinutes;
 
-    // Generate dates for the next 7 days
     const screenings = [];
     const halls = ["Hall A", "Hall B", "Hall C"];
     const startTimes = ["13:30", "16:00", "18:30", "21:00"];
 
-    // Get today's date
     const today = new Date();
     let screeningId = 1;
 
-    // Generate screenings for the next 7 days
     for (let i = 0; i < 7; i++) {
       const date = new Date();
       date.setDate(today.getDate() + i);
       const dateStr = date.toISOString().split("T")[0];
 
-      // 2-3 screenings per day
       const screeningsPerDay = 2 + Math.floor(Math.random() * 2);
       const dayTimes = [...startTimes]
         .sort(() => 0.5 - Math.random())
         .slice(0, screeningsPerDay);
 
-      // Assign each hall once before repeating
       const shuffledHalls = [...halls].sort(() => 0.5 - Math.random());
 
       dayTimes.forEach((time, index) => {
-        // Use halls in sequence for better distribution
         const hall = shuffledHalls[index % halls.length];
 
         screenings.push({
@@ -226,7 +228,7 @@ function generateSeats(hall, movieId, date) {
       ? ["A", "B", "C", "D"]
       : ["A", "B", "C"];
 
-  const seatsPerRow = hall === "Hall A" ? 12 : hall === "Hall B" ? 10 : 8;
+  const seatsPerRow = 10;
 
   const seats = [];
 
@@ -466,7 +468,6 @@ app.get("/screenings/:id/seats", async (req, res) => {
 app.get("/fnbItems", (req, res) => {
   return res.json(demoFnB);
 });
-
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
