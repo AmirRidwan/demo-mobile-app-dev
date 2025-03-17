@@ -86,7 +86,7 @@ const paymentStyles = StyleSheet.create({
 
 	headerButton: {
 		position: 'absolute',
-		top: 20,
+		top: 30,
 		left: 15,
 		zIndex: 100,
 		height: 20,
@@ -97,7 +97,8 @@ const paymentStyles = StyleSheet.create({
 		fontSize: 18, 
 		fontWeight: 'bold', 
 		textAlign: 'center',
-		paddingVertical: 15
+		paddingVertical: 15,
+		paddingTop: 30
 	},
 
 	contentContainer: {
