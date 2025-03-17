@@ -33,7 +33,7 @@ export type SeatType = {
     id: string;
     row: string;
     number: string;
-    status: 'booked' | 'selected' | 'available';
+    status: 'booked' | 'selected' | 'available' | 'locked';
     price: number;
 };
 

@@ -11,10 +11,12 @@ class TicketController extends Controller
 {
     public function bookTicket($id)
     {
-        $locations = json_decode(file_get_contents(public_path('/json/cinema-location.json')));
-        $seats = collect(json_decode(file_get_contents(public_path('/json/seat-status.json'))));
-        // collect($seats)->where('id', 'A1')->first()->status = 'booked';
-        // dd($seats->where('id', 'A1'));
+
+
+        $locations = json_decode(Storage::disk('public')->get('cinema-location.json'));
+        // dd($locations);
+
+        $seats = collect(json_decode(Storage::disk('public')->get('seat-status.json')));
 
         return Inertia::render('book-ticket', [
             'id' => $id,
@@ -32,19 +34,19 @@ class TicketController extends Controller
         $selected_seats = $request->all();
 
         // get json file
-        $seats = collect(json_decode(file_get_contents(public_path('/json/seat-status.json'))));
+        $seats = collect(json_decode(Storage::disk('public')->get('seat-status.json')));
+
+        // dd($seats);
 
         // update seats
         foreach ($selected_seats as $seatId) {
-            $seats->where('id', $seatId)->first()->status = 'booked';
+            $seats->where('id', $seatId)->first()->status = 'locked';
         };
 
         $new_seats = json_encode($seats);
 
         // save the new file
-        file_put_contents(public_path('/json/seat-status.json'), $new_seats);
-
-        // dd(json_decode(file_get_contents(public_path('/json/seat-status.json'))));
+        Storage::disk('public')->put('seat-status.json', $new_seats);
 
         return Inertia::render('booking-summary');
         // return $request->all();
