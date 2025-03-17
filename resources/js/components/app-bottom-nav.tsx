@@ -37,7 +37,7 @@ const mainNavItems: NavItem[] = [
 export function AppBottomNav() {
     return (
         <>
-            <div className="bg-sidebar sticky bottom-0 max-w-full border-t-1">
+            <div className="sticky bottom-0 max-w-full border-t-1 bg-neutral-900">
                 {/* Mobile Menu */}
                 <NavigationMenu className="">
                     <NavigationMenuList className="">

@@ -18,7 +18,7 @@ import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import { format } from 'date-fns';
 import { CalendarIcon } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export type LocationType = {
     id: string;
@@ -58,9 +58,6 @@ export default function Movie({
         return acc;
     }, []);
 
-    useEffect(() => {
-        console.log(selectedSeatsId);
-    }, [selectedSeatsId]);
     return (
         <>
             <AppHeader backBtn={true} title="Ticket Booking" />
@@ -267,7 +264,11 @@ export default function Movie({
                     </div>
                 </div>
             </AppLayout>
-            <AppBottomNavLayout className="p-3">
+            <AppBottomNavLayout className="flex gap-3 p-3">
+                <Button variant="outline" asChild className="w-full bg-transparent">
+                    <Link href={route('home')}>Cancel</Link>
+                </Button>
+
                 <Button asChild className="w-full">
                     <Link href={route('book.summary', [id, selectedSeatsId])}>Book Ticket</Link>
                 </Button>

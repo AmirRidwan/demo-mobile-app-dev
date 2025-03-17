@@ -11,7 +11,7 @@ export function AppBottomNavLayout({
     className?: string;
 }) {
     return (
-        <div className={`bg-sidebar sticky bottom-0 max-w-full border-t-1 ${className}`}>
+        <div className={`sticky bottom-0 max-w-full border-t-1 bg-neutral-900 ${className}`}>
             {children}
         </div>
     );
