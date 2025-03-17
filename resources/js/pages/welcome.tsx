@@ -15,6 +15,12 @@ export type MovieType = {
     title: string;
     vote_average: number;
     vote_count: number;
+    original_title: string;
+    runtime: number;
+    genres: {
+        id: string;
+        name: string;
+    }[];
 };
 
 export default function Welcome({

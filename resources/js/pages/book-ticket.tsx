@@ -269,7 +269,11 @@ export default function Movie({
                     <Link href={route('home')}>Cancel</Link>
                 </Button>
 
-                <Button asChild className="w-full">
+                <Button
+                    asChild={selectedSeatsId.length !== 0}
+                    disabled={selectedSeatsId.length == 0}
+                    className="w-full"
+                >
                     <Link href={route('book.summary', [id, selectedSeatsId])}>Book Ticket</Link>
                 </Button>
             </AppBottomNavLayout>

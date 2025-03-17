@@ -1,4 +1,5 @@
 import BackButton from '@/components/button/back-btn';
+import MovieImage from '@/components/movie-image';
 import Rating from '@/components/rating/rating';
 import Review from '@/components/rating/review';
 import Star from '@/components/rating/star';
@@ -13,20 +14,7 @@ import { AppBottomNavLayout } from '@/layouts/app-bottom-nav-layout';
 import AppLayout from '@/layouts/app-layout';
 import { Link } from '@inertiajs/react';
 import ReactPlayer from 'react-player/youtube';
-
-export type MovieDetailsType = {
-    id: number;
-    poster_path: string;
-    original_title: string;
-    runtime: number;
-    vote_average: number;
-    vote_count: number;
-    overview: string;
-    genres: {
-        id: string;
-        name: string;
-    }[];
-};
+import { MovieType } from './welcome';
 
 export type TrailerType = {
     key: string;
@@ -60,7 +48,7 @@ export default function Movie({
     writer,
     reviews,
 }: {
-    details: MovieDetailsType;
+    details: MovieType;
     trailer: TrailerType;
     release_date: string;
     casts: CastsType[];
@@ -84,16 +72,7 @@ export default function Movie({
             <AppLayout>
                 <div className="flex gap-4 py-1">
                     <div className="w-32">
-                        <AspectRatio ratio={2 / 3}>
-                            <img
-                                src={
-                                    details.poster_path
-                                        ? `https://image.tmdb.org/t/p/w342${details.poster_path}`
-                                        : '/img/avatar.jpg'
-                                }
-                                className="h-full w-full rounded-md object-cover"
-                            />
-                        </AspectRatio>
+                        <MovieImage src={details.poster_path} />
                     </div>
                     <div className="space-y-3">
                         <div className="space-y-1">
@@ -163,11 +142,15 @@ export default function Movie({
                     <Separator />
                     <TabsContent value="details" className="mt-3">
                         <div className="space-y-3">
-                            <div>
-                                <SectionTitle viewMore={false}>Full Sypnopsis</SectionTitle>
-                                <p className="text-sm leading-[150%]">{details.overview}</p>
-                            </div>
-                            <Separator />
+                            {details.overview && (
+                                <>
+                                    <div>
+                                        <SectionTitle viewMore={false}>Full Sypnopsis</SectionTitle>
+                                        <p className="text-sm leading-[150%]">{details.overview}</p>
+                                    </div>
+                                    <Separator />
+                                </>
+                            )}
 
                             <div className="space-y-3">
                                 <div>
