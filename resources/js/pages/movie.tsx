@@ -290,7 +290,7 @@ export default function Movie({
 
             <AppBottomNavLayout className="p-3">
                 <Button asChild className="w-full">
-                    <Link href={route('book_ticket', details.id)}>Book Ticket</Link>
+                    <Link href={route('book.ticket', details.id)}>Book Ticket</Link>
                 </Button>
             </AppBottomNavLayout>
         </>

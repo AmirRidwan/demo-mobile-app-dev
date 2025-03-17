@@ -8,7 +8,8 @@ use Inertia\Inertia;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/movies/{id}', [MovieController::class, 'show'])->name('movie_details');
-Route::get('/movies/{id}/book-ticket', [TicketController::class, 'bookTicket'])->name('book_ticket');
+Route::get('/movies/{id}/book-ticket', [TicketController::class, 'bookTicket'])->name('book.ticket');
+Route::get('/movies/{id}/booking-summary', [TicketController::class, 'bookingSummary'])->name('book.summary');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
