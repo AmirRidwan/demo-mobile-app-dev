@@ -1,8 +1,8 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useMemo, useCallback} from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView, SafeAreaView} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import { io } from 'socket.io-client';
 import Snackbar from 'react-native-snackbar';
 
@@ -22,6 +22,8 @@ const getNext7Days = () => {
 		return {
 			day: days[date.getDay()],
 			date: date.getDate(),
+			month: months[date.getMonth()],
+			year: date.getFullYear()
 		};
 	});
 
@@ -44,8 +46,8 @@ export default TicketBooking = () => {
 	const [cinemaList, setCinemaList] = useState([])
 	const [timeList, setTimeList] = useState([])
 
-	const [selectedLocation, setSelectedLocation] = useState();
-	const [selectedCinema, setSelectedCinema] = useState();
+	const [selectedLocation, setSelectedLocation] = useState(null);
+	const [selectedCinema, setSelectedCinema] = useState(null);
 	const [selectedDate, setSelectedDate] = useState(null);
 	const [selectedTime, setSelectedTime] = useState(null);
 	const [selectedSeats, setSelectedSeats] = useState(new Set());
@@ -56,6 +58,18 @@ export default TicketBooking = () => {
 
 	const next7Days = getNext7Days()
 	const seatRows = 'ABCDEFGH'.split('');
+
+	const hasMovieData = useMemo(() => {
+		return (
+			movieData &&
+			movieId &&
+			selectedCinema &&
+			selectedDate &&
+			selectedTime &&
+			selectedSeats.size > 0 &&
+			seatPrice
+		);
+	}, [movieData, movieId, selectedCinema, selectedDate, selectedTime, selectedSeats, seatPrice]);
 
 	const [seatStatus, setSeatStatus] = useState({})
 	const [socket, setSocket] = useState(null);
@@ -123,6 +137,11 @@ export default TicketBooking = () => {
 		return () => newSocket.disconnect();
 	}
 
+	const disconnectSocket = () => {
+		socket.disconnect()
+		setSocket(null)
+	}
+
 	const handleSeatPress = (seatId) => {
 		setSelectedSeats((prevSelected) => {
 			const updated = new Set(prevSelected);
@@ -153,16 +172,28 @@ export default TicketBooking = () => {
 			selectedSeats.forEach(seatId => {
 				socket.emit('deselect_seat', { movieId, seatId });
 			});
-			socket.disconnect()
-			setSocket(null)
+			disconnectSocket()
 		}
 	}
+
+
 	
 	const scrollViewRef = useRef();
 
 	useEffect(() => {
 		getCinemaLocations()
+		if (hasMovieData) {
+			getLiveSeatData(selectedTime)
+		}
 	}, []);
+
+	useFocusEffect(
+		useCallback(() => {
+			if (hasMovieData) {
+				getLiveSeatData(selectedTime);
+			}
+		}, [hasMovieData, selectedTime])
+	);
 
 
 	return (
@@ -184,11 +215,11 @@ export default TicketBooking = () => {
 				<View style={TicketBookingStyles.seatTierContainer}>
 					<View style={TicketBookingStyles.seatTier}>
 						<Text style={TicketBookingStyles.tierTextIndicate}>Tickets from</Text>
-						<Text style={TicketBookingStyles.tierText}>$ 2000 - $ 5000</Text>
+						<Text style={TicketBookingStyles.tierText}>NGN 2000 - NGN 5000</Text>
 					</View>
 					<View style={TicketBookingStyles.seatTier}>
 						<Text style={TicketBookingStyles.tierTextIndicate}>Tickets from</Text>
-						<Text style={TicketBookingStyles.tierText}>$ 1500 - $ 4500</Text>
+						<Text style={TicketBookingStyles.tierText}>NGN 1500 - NGN 4500</Text>
 					</View>
 				</View>
 
@@ -198,7 +229,7 @@ export default TicketBooking = () => {
 					<Picker 
 						selectedValue={selectedLocation} 
 						style={TicketBookingStyles.picker} 
-						onValueChange={(state) => {setSelectedLocation(state); setCinemaList(locationList[state])}}
+						onValueChange={(state) => {setSelectedLocation(state); setSelectedCinema(null); setSelectedDate(null); setSelectedTime(null); setCinemaList(locationList[state])}}
 					>
 						<Picker.Item label="Select Location" value={null} />
 						{ Object.keys(locationList).map((states, index) => (<Picker.Item key={index} label={states} value={states} />)) }
@@ -211,7 +242,7 @@ export default TicketBooking = () => {
 					<Picker 
 						selectedValue={selectedCinema} 
 						style={TicketBookingStyles.picker} 
-						onValueChange={itemValue => {setSelectedCinema(itemValue); cancelSeatSelection()}}
+						onValueChange={itemValue => {setSelectedCinema(itemValue); setSelectedDate(null); setSelectedTime(null); cancelSeatSelection()}}
 					>
 						<Picker.Item label="Select Cinema Hall" value={null} />
 						{ cinemaList.map((cinema, index) => (<Picker.Item key={index} label={cinema} value={cinema} />)) }
@@ -221,13 +252,13 @@ export default TicketBooking = () => {
 				{/* DATE */}
 				{ selectedCinema && ( <>
 					<SelectorLabel label={"Date"} />
-					<Text style={TicketBookingStyles.dateMonth}>| {next7Days.month} |</Text>
+					<Text style={TicketBookingStyles.dateMonth}>• {next7Days.month} •</Text>
 					<View style={TicketBookingStyles.dateRow}>
 						{next7Days.dates.map((date, index) => (
 							<Pressable
 								key={index}
 								style={[TicketBookingStyles.dateBox, selectedDate?.date === date.date && TicketBookingStyles.selectedBox]}
-								onPress={() => {setSelectedDate(date); getAvailableTime(date); cancelSeatSelection()}}
+								onPress={() => {setSelectedDate(date); getAvailableTime(date); setSelectedTime(null); cancelSeatSelection()}}
 							>
 								<Text style={TicketBookingStyles.dateText}>{date.day}</Text>
 								<Text style={TicketBookingStyles.dateText}>{date.date}</Text>
@@ -350,9 +381,7 @@ export default TicketBooking = () => {
 						</View>
 						<View style={TicketBookingStyles.summaryBox}>
 						<Text style={TicketBookingStyles.summaryText}>SUB-TOTAL</Text>
-						<Text style={TicketBookingStyles.subtotal}>
-							$ {(selectedSeats.size * seatPrice) || 0}
-						</Text>
+						<Text style={TicketBookingStyles.subtotal}>₦ {(selectedSeats.size * seatPrice) || 0}</Text>
 						</View>
 					</View>
 
@@ -366,19 +395,22 @@ export default TicketBooking = () => {
 					<Text style={TicketBookingStyles.cancelText}>Cancel</Text>
 				</Pressable>
 				<Pressable 
-					style={TicketBookingStyles.proceedButton} 
-					onPress={() => navigation.navigate('Payment', { movieId, seats: Array.from(selectedSeats), subtotal: seatPrice })}
-					// onPress={() => navigation.navigate('BookingSummary', { 
-					// 	movieData, 
-					// 	movieId, 
-					// 	startTime: selectedTime,
-					// 	date: selectedDate,
-					// 	seats: selectedSeats, 
-					// 	subtotal: seatPrice 
-					// })}
-
+					style={[TicketBookingStyles.proceedButton, (!hasMovieData && TicketBookingStyles.disabledButton)]} 
+					disabled={!hasMovieData}
+					onPress={() => {
+						disconnectSocket()
+						navigation.navigate('BookingSummary', { 
+							movieData, 
+							movieId, 
+							cinema: selectedCinema, 
+							date: selectedDate, 
+							time: selectedTime, 
+							seats: Array.from(selectedSeats), 
+							subtotal: seatPrice 
+						})}
+					}
 				>
-					<Text style={TicketBookingStyles.proceedText}>Proceed</Text>
+					<Text style={[TicketBookingStyles.proceedText, (!hasMovieData && TicketBookingStyles.disabledText)]}>Proceed</Text>
 				</Pressable>
 			</View>
 		</SafeAreaView>
@@ -393,6 +425,7 @@ const TicketBookingStyles = StyleSheet.create({
 	},
 	scrollContainer: {
 		padding: 20,
+		backgroundColor: "#111"
 	},
 	headerButton: {
 		position: 'absolute',
@@ -444,24 +477,24 @@ const TicketBookingStyles = StyleSheet.create({
 		height: 40,
 		paddingHorizontal: 10,
 		paddingVertical: 0,
-		borderWidth: 1,
-		borderColor: '#555',
+		// borderWidth: 1,
+		// borderColor: '#555',
 		borderRadius: 10,
-		backgroundColor: 'black',
+		backgroundColor: 'white',
 		justifyContent: 'center',
 		marginBottom: 10
 	},
 	picker: {
-		color: 'white',
+		color: 'black',
 		fontSize: 16,
 		width: '100%',
 	},
 
 	dateMonth: {
 		color: 'gray',
-		fontSize: 12,
+		fontSize: 14,
 		paddingHorizontal: 5,
-		marginBottom: 5
+		marginBottom: 10
 	},
 	dateRow: {
 		flexDirection: 'row',
@@ -473,7 +506,7 @@ const TicketBookingStyles = StyleSheet.create({
 		paddingVertical: 8,
 		paddingHorizontal: 2,
 		borderWidth: 1,
-
+		borderColor: 'transparent',
 		borderRadius: 8,
 		marginRight: 8,
 		marginBottom: 8
@@ -489,11 +522,13 @@ const TicketBookingStyles = StyleSheet.create({
 		flexDirection: 'row',
 		flexWrap: 'wrap',
 		gap: 10,
-		marginTop: 8
+		marginTop: 8,
+		marginBottom: 25
 	},
 	timeBox: {
 		width: 80,
 		borderWidth: 1,
+		borderColor: 'transparent',
 		paddingVertical: 10,
 		paddingHorizontal: 10,
 		borderRadius: 10,
@@ -505,7 +540,7 @@ const TicketBookingStyles = StyleSheet.create({
 	},
 	selectedBox: {
 		// backgroundColor: '#555',
-		borderColor: "#555"
+		borderColor: "white"
 	},
 
 	seatSelectorLabel: {
@@ -537,7 +572,7 @@ const TicketBookingStyles = StyleSheet.create({
 		justifyContent: "center"
 	},
 	seatBlank: {
-		backgroundColor: "black"
+		backgroundColor: 'transparent'
 	},
 	userSeatSelected: {
 		backgroundColor: "lightgray"
@@ -622,5 +657,11 @@ const TicketBookingStyles = StyleSheet.create({
 	proceedText: {
 		color: 'white', 
 		fontWeight: 'bold'
+	},
+	disabledButton: {
+		backgroundColor: '#111',
+	},
+	disabledText: {
+		color: 'gray', 
 	},
 });
