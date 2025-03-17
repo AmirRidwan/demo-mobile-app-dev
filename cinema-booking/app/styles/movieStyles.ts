@@ -1,5 +1,6 @@
 import { StyleSheet, Dimensions, Platform, StatusBar } from "react-native";
 import { Colors } from "@/constants/Colors";
+import { commonStyles } from "./commonStyles";
 
 const { width } = Dimensions.get("window");
 const statusBarHeight =
@@ -7,29 +8,11 @@ const statusBarHeight =
 const safeTopMargin = statusBarHeight + 10;
 
 export const movieStyles = StyleSheet.create({
-  // Back button overlay - left side
-  backButtonOverlay: {
-    position: "absolute",
-    top: safeTopMargin, // Dynamically calculate based on status bar height
-    left: 15,
-    zIndex: 1000, // Ensure it's above other elements
-    borderRadius: 20,
-    padding: 8,
-    width: 40,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
+  // --- BUTTON AND NAVIGATION STYLES ---
+  backButtonOverlay: commonStyles.backButtonOverlay,
 
-  // Container styles
-  container: {
-    flex: 1,
-  },
+  // --- CONTAINER STYLES ---
+  container: commonStyles.container,
   centered: {
     justifyContent: "center",
     alignItems: "center",
@@ -37,10 +20,10 @@ export const movieStyles = StyleSheet.create({
   content: {
     padding: 16,
     borderRadius: 20,
-    marginTop: -18
+    marginTop: -18,
   },
 
-  // Poster and trailer styles
+  // --- POSTER AND TRAILER STYLES ---
   posterContainer: {
     position: "relative",
     width: "100%",
@@ -62,7 +45,7 @@ export const movieStyles = StyleSheet.create({
   },
   trailerContainer: {
     width: "100%",
-    height: width * 0.5625 + 30, // Height of video plus some extra room for controls
+    height: width * 0.5625 + 30, // Height of video plus extra room for controls
     position: "relative",
     backgroundColor: "#000",
   },
@@ -77,8 +60,8 @@ export const movieStyles = StyleSheet.create({
   },
   closeTrailer: {
     position: "absolute",
-    top: safeTopMargin, // Use the same safe top margin as back button
-    right: 15, // Match the left margin of back button
+    top: safeTopMargin,
+    right: 15,
     borderRadius: 20,
     padding: 8,
     width: 40,
@@ -93,7 +76,7 @@ export const movieStyles = StyleSheet.create({
     elevation: 5,
   },
 
-  // Title and details styles
+  // --- TITLE AND DETAILS STYLES ---
   title: {
     marginVertical: 8,
   },
@@ -118,30 +101,14 @@ export const movieStyles = StyleSheet.create({
     textAlign: "right",
   },
 
-  // Tab navigation styles
-  tabContainer: {
-    flexDirection: "row",
-    marginVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#DDD",
-  },
-  tabButton: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: "center",
-  },
-  activeTab: {
-    borderBottomWidth: 2,
-    borderBottomColor: Colors.light.tint,
-  },
-  tabText: {
-    color: "#666",
-  },
-  activeTabText: {
-    color: Colors.light.tint,
-  },
+  // --- TAB NAVIGATION STYLES ---
+  tabContainer: commonStyles.tabContainer,
+  tabButton: commonStyles.tabButton,
+  activeTab: commonStyles.activeTab,
+  tabText: commonStyles.tabText,
+  activeTabText: commonStyles.activeTabText,
 
-  // Description and synopsis styles
+  // --- DESCRIPTION STYLES ---
   descriptionContainer: {
     marginBottom: 10,
   },
@@ -150,7 +117,7 @@ export const movieStyles = StyleSheet.create({
     lineHeight: 22,
   },
 
-  // Cast styles
+  // --- CAST STYLES ---
   castsContainer: {
     marginTop: 12,
     marginBottom: 0,
@@ -166,7 +133,7 @@ export const movieStyles = StyleSheet.create({
     paddingRight: 12,
   },
 
-  // Review styles
+  // --- REVIEW STYLES ---
   reviewsContainer: {
     marginBottom: 24,
   },
@@ -191,23 +158,19 @@ export const movieStyles = StyleSheet.create({
     paddingVertical: 30,
   },
 
-  // Button styles
+  // --- BUTTON STYLES ---
   bookTicketButton: {
+    ...commonStyles.buttonBase,
     backgroundColor: "#E63946",
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
     marginVertical: 16,
+    borderRadius: 12,
   },
   bookTicketText: {
     color: "white",
     fontSize: 16,
     fontWeight: "600",
   },
-  disabledButton: {
-    backgroundColor: "#ccc",
-    opacity: 0.7,
-  },
+  disabledButton: commonStyles.disabledButton,
   backButton: {
     backgroundColor: "#DDD",
     padding: 12,
@@ -219,16 +182,12 @@ export const movieStyles = StyleSheet.create({
     color: "#333",
   },
   retryButton: {
-    backgroundColor: Colors.light.tint,
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
+    ...commonStyles.buttonBase,
+    ...commonStyles.primaryButton,
   },
-  retryButtonText: {
-    color: "#FFF",
-  },
+  retryButtonText: commonStyles.primaryButtonText,
 
-  // Screening styles
+  // --- SCREENING STYLES ---
   screeningsContainer: {
     marginBottom: 24,
   },
@@ -250,12 +209,8 @@ export const movieStyles = StyleSheet.create({
     opacity: 0.6,
   },
 
-  // Error states
-  errorText: {
-    textAlign: "center",
-    marginBottom: 16,
-    padding: 16,
-  },
+  // --- ERROR STATES ---
+  errorText: commonStyles.errorText,
 });
 
 export default movieStyles;

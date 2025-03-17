@@ -23,6 +23,7 @@ import API_CONFIG from "@/utils/api";
 
 import { Movie, Review } from "@/types";
 import { movieStyles } from "@/app/styles/movieStyles";
+import { BackButton } from "@/components/BackButton";
 
 export default function MovieDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -266,17 +267,10 @@ export default function MovieDetailScreen() {
   return (
     <View style={{ flex: 1 }}>
       {/* Back button overlay */}
-      <TouchableOpacity
-        style={movieStyles.backButtonOverlay}
-        onPress={() => router.back()}
-        activeOpacity={0.7}
-      >
-        <AntDesign
-          name="arrowleft"
-          size={24}
-          color={colorScheme === "dark" ? "white" : "black"}
-        />
-      </TouchableOpacity>
+      <BackButton
+        defaultPath={`/`}
+        onPress={() => router.push(`/`)}
+      />
 
       <ScrollView style={movieStyles.container}>
         {trailerPlaying ? (

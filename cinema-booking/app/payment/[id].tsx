@@ -14,6 +14,7 @@ import { AntDesign } from "@expo/vector-icons";
 
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { BackButton } from "@/components/BackButton";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Booking } from "@/types";
@@ -133,13 +134,7 @@ export default function PaymentScreen() {
   return (
     <ThemedView style={paymentStyles.container}>
       <ThemedView style={paymentStyles.darkHeader}>
-        <TouchableOpacity
-          style={paymentStyles.backButtonOverlay}
-          onPress={() => router.back()}
-          activeOpacity={0.7}
-        >
-          <AntDesign name="arrowleft" size={24} color="#fff" />
-        </TouchableOpacity>
+        <BackButton color="#fff" />
         <ThemedText style={paymentStyles.darkHeaderTitle}>
           Booking Summary
         </ThemedText>
@@ -263,19 +258,28 @@ export default function PaymentScreen() {
                 </ThemedText>
               </ThemedView>
             </ThemedView>
-            <ThemedView style={paymentStyles.fnbContainer}>
-              <ThemedText style={paymentStyles.sectionTitle}>
-                Food & Beverage
-              </ThemedText>
-              <ThemedView style={paymentStyles.fnbRow}>
-                <ThemedText style={paymentStyles.fnbLabel}>
-                  Fresh XL Combo [x2]
-                </ThemedText>
-                <ThemedText style={paymentStyles.fnbPrice}>
-                  RM {fnbTotal.toFixed(0)}
-                </ThemedText>
-              </ThemedView>
-            </ThemedView>
+
+            {/* Only show F&B section if there are actual F&B items */}
+            {fnbTotal > 0 &&
+              booking.fnbItems &&
+              booking.fnbItems.length > 0 && (
+                <ThemedView style={paymentStyles.fnbContainer}>
+                  <ThemedText style={paymentStyles.sectionTitle}>
+                    Food & Beverage
+                  </ThemedText>
+                  <ThemedView style={paymentStyles.fnbRow}>
+                    <ThemedText style={paymentStyles.fnbLabel}>
+                      {booking.fnbItems
+                        .map((item) => `${item.name} [x${item.quantity}]`)
+                        .join(", ")}
+                    </ThemedText>
+                    <ThemedText style={paymentStyles.fnbPrice}>
+                      RM {fnbTotal.toFixed(0)}
+                    </ThemedText>
+                  </ThemedView>
+                </ThemedView>
+              )}
+
             <ThemedView style={paymentStyles.chargesContainer}>
               <ThemedText style={paymentStyles.sectionTitle}>
                 Charges
@@ -312,11 +316,10 @@ export default function PaymentScreen() {
           </ThemedView>
         </ThemedView>
 
-        {/* Proceed to Payment Button */}
+        {/* Proceed to Payment Button - Change color to match other buttons */}
         <TouchableOpacity
           style={[
             paymentStyles.proceedButton,
-            paymentStyles.activeButton,
             processing && paymentStyles.disabledButton,
           ]}
           onPress={handleProceedToPayment}

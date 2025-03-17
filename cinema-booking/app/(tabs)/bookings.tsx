@@ -54,7 +54,8 @@ const BookingCard = ({
 
     <ThemedView style={bookingStyles.summaryContainer}>
       <ThemedText type="defaultSemiBold" style={{ marginTop: 10 }}>
-        Total: ${booking.grandTotal?.toFixed(2) || booking.subtotal.toFixed(2)}
+        Total: RM{" "}
+        {booking.grandTotal?.toFixed(2) || booking.subtotal.toFixed(2)}
       </ThemedText>
     </ThemedView>
 
@@ -66,7 +67,9 @@ const BookingCard = ({
       style={bookingStyles.cancelButton}
       onPress={() => onCancel(booking.id)}
     >
-      <ThemedText style={bookingStyles.cancelButtonText}>Cancel Booking</ThemedText>
+      <ThemedText style={bookingStyles.cancelButtonText}>
+        Cancel Booking
+      </ThemedText>
     </TouchableOpacity>
   </ThemedView>
 );
@@ -80,7 +83,30 @@ export default function BookingsScreen() {
     try {
       const storedBookings = await AsyncStorage.getItem("bookings");
       if (storedBookings) {
-        setBookings(JSON.parse(storedBookings));
+        const allBookings = JSON.parse(storedBookings);
+
+        // Filter to keep only bookings with the 'paid' property
+        const paidBookings = allBookings.filter(
+          (booking: Booking) => "paid" in booking
+        );
+
+        // If we found bookings without the paid property, update storage
+        if (paidBookings.length < allBookings.length) {
+          // Save back only the bookings with paid property to AsyncStorage
+          await AsyncStorage.setItem("bookings", JSON.stringify(paidBookings));
+          console.log(
+            `Removed ${
+              allBookings.length - paidBookings.length
+            } booking(s) without payment status.`
+          );
+        }
+
+        // Filter to only show paid bookings for display
+        const confirmedPaidBookings = paidBookings.filter(
+          (booking: Booking) => booking.paid
+        );
+
+        setBookings(confirmedPaidBookings);
       }
     } catch (error) {
       console.error("Error loading bookings:", error);
@@ -149,34 +175,39 @@ export default function BookingsScreen() {
     );
   }
 
-  return (
-    <ThemedView style={styles.container}>
-      <ThemedView style={styles.header}>
-        <ThemedText type="title">My Bookings</ThemedText>
-      </ThemedView>
+  const ListHeader = () => (
+    <ThemedView style={styles.header}>
+      <ThemedText type="title">My Bookings</ThemedText>
+    </ThemedView>
+  );
 
-      {bookings.length > 0 ? (
-        <FlatList
-          data={bookings}
-          renderItem={({ item }) => (
-            <BookingCard booking={item} onCancel={handleCancelBooking} />
-          )}
-          keyExtractor={(item) => item.id || `booking-${item.bookingTime}`}
-          contentContainerStyle={bookingStyles.bookingList}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={handleRefresh}
-            />
-          }
-        />
-      ) : (
-        <ThemedView style={bookingStyles.noBookings}>
-          <ThemedText type="subtitle">No bookings found</ThemedText>
-          <ThemedText>Your booked tickets will appear here</ThemedText>
-        </ThemedView>
-      )}
+  const EmptyListComponent = () => (
+    <ThemedView style={bookingStyles.noBookings}>
+      <ThemedText type="subtitle">No paid bookings found</ThemedText>
+      <ThemedText>Your paid tickets will appear here</ThemedText>
+    </ThemedView>
+  );
+
+  return (
+    <ThemedView style={{ flex: 1 }}>
+      <FlatList
+        data={bookings}
+        renderItem={({ item }) => (
+          <BookingCard booking={item} onCancel={handleCancelBooking} />
+        )}
+        keyExtractor={(item) => item.id || `booking-${item.bookingTime}`}
+        contentContainerStyle={[
+          bookingStyles.bookingList,
+          styles.screenContainer,
+          { flexGrow: 1 },
+        ]}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+        }
+        ListHeaderComponent={<ListHeader />}
+        ListEmptyComponent={<EmptyListComponent />}
+      />
     </ThemedView>
   );
 }

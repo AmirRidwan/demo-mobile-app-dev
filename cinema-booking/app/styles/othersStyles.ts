@@ -1,40 +1,25 @@
 import { StyleSheet } from "react-native";
 import { Colors } from "@/constants/Colors";
+import { commonStyles } from "./commonStyles";
 
 export const othersStyles = StyleSheet.create({
-  darkHeader: {
-    backgroundColor: Colors.dark.background,
-    paddingTop: 50,
-    paddingBottom: 15,
-    paddingHorizontal: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.1)",
-  },
-  darkHeaderTitle: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "bold",
-    textAlign: "center",
-    flex: 1,
-  },
-  backButtonOverlay: {
-    position: "absolute",
-    top: 55,
-    left: 20,
-    zIndex: 10,
-    borderRadius: 20,
-    width: 40,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  // --- HEADER STYLES ---
+  darkHeader: commonStyles.darkHeader,
+  darkHeaderTitle: commonStyles.darkHeaderTitle,
+  backButtonOverlay: commonStyles.backButtonOverlay,
+
+  // --- CONTAINER STYLES ---
   darkContainer: {
-    flex: 1,
-    backgroundColor: Colors.dark.background,
+    ...commonStyles.darkContainer,
     padding: 16,
   },
+  container: {
+    flex: 1,
+    padding: 16,
+  },
+  loadingContainer: commonStyles.loadingContainer,
+
+  // --- TEXT STYLES ---
   darkInstructions: {
     color: "rgba(255,255,255,0.7)",
     fontSize: 16,
@@ -47,6 +32,8 @@ export const othersStyles = StyleSheet.create({
     color: "white",
     marginVertical: 16,
   },
+
+  // --- BOOKING SUMMARY STYLES ---
   bookingSummary: {
     padding: 16,
     borderRadius: 10,
@@ -79,6 +66,8 @@ export const othersStyles = StyleSheet.create({
     fontWeight: "bold",
     color: Colors.light.tint,
   },
+
+  // --- FOOD & BEVERAGE STYLES ---
   fnbGrid: {
     marginBottom: 20,
   },
@@ -104,6 +93,13 @@ export const othersStyles = StyleSheet.create({
     fontSize: 14,
     color: Colors.light.tint,
   },
+  itemDescription: {
+    fontSize: 14,
+    color: "rgba(255,255,255,0.6)",
+    marginBottom: 4,
+  },
+
+  // --- QUANTITY CONTROLS ---
   quantityControls: {
     flexDirection: "row",
     alignItems: "center",
@@ -133,6 +129,8 @@ export const othersStyles = StyleSheet.create({
     minWidth: 20,
     textAlign: "center",
   },
+
+  // --- ORDER SUMMARY STYLES ---
   orderSummary: {
     padding: 16,
     borderRadius: 10,
@@ -173,11 +171,9 @@ export const othersStyles = StyleSheet.create({
     fontWeight: "bold",
     color: Colors.light.tint,
   },
-  actionButtonsContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginVertical: 20,
-  },
+
+  // --- ACTION BUTTONS ---
+  actionButtonsContainer: commonStyles.actionButtonsContainer,
   lightCancelButton: {
     flex: 1,
     marginRight: 10,
@@ -203,22 +199,14 @@ export const othersStyles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: Colors.dark.background,
-  },
-  container: {
-    flex: 1,
-    padding: 16,
-  },
-  // Tab styles - updated to match movieStyles.ts
+  disabledButton: commonStyles.disabledButton,
+
+  // --- TAB STYLES ---
   tabContainer: {
     flexDirection: "row",
     marginVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#DDD",
+    borderBottomColor: "#333",
   },
   tabButton: {
     flex: 1,
@@ -235,33 +223,37 @@ export const othersStyles = StyleSheet.create({
   activeTabText: {
     color: Colors.light.tint,
   },
-  // Item description
-  itemDescription: {
-    fontSize: 14,
-    color: "rgba(255,255,255,0.6)",
-    marginBottom: 4,
-  },
 
-  // New styles from [id].tsx
-  containerNew: {
-    flex: 1,
-    backgroundColor: "#000",
-  },
+  // --- NEW SCREEN STYLES ---
+  containerNew: commonStyles.darkContainer,
   headerNew: {
+    ...commonStyles.darkHeader,
+    borderBottomWidth: 0,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    paddingTop: 50,
-    paddingBottom: 15,
     paddingHorizontal: 16,
-    backgroundColor: "#000",
+    justifyContent: "space-between",
+    height: 60,
+  },
+  headerGridColumn: {
+    justifyContent: "center",
+  },
+  headerLeftColumn: {
+    width: 60,
+    alignItems: "flex-start",
+  },
+  headerCenterColumn: {
+    flex: 1,
+    alignItems: "center",
+  },
+  headerRightColumn: {
+    width: 60,
+    alignItems: "flex-end",
   },
   headerTitleNew: {
-    color: "white",
+    ...commonStyles.darkHeaderTitle,
     fontSize: 18,
-    fontWeight: "bold",
     textAlign: "center",
-    flex: 1,
   },
   backButtonNew: {
     padding: 8,
@@ -271,24 +263,17 @@ export const othersStyles = StyleSheet.create({
   },
   skipTextNew: {
     color: "white",
-    fontSize: 16,
+    fontSize: 15,
   },
 
-  // Updated tab styles to match movie details screen
+  // --- UPDATED TAB STYLES ---
   tabContainerNew: {
-    flexDirection: "row",
+    ...commonStyles.tabContainer,
     marginVertical: 0,
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
-    backgroundColor: "#000",
-    justifyContent: "center",
-    paddingHorizontal: 16,
   },
   tabButtonNew: {
-    paddingVertical: 12,
+    ...commonStyles.tabButton,
     paddingHorizontal: 16,
-    alignItems: "center",
-    flex: 1,
   },
   activeTabNew: {
     borderBottomWidth: 2,
@@ -303,10 +288,13 @@ export const othersStyles = StyleSheet.create({
     fontWeight: "500",
   },
 
+  // --- SCROLL VIEW STYLES ---
   scrollViewNew: {
     flex: 1,
     backgroundColor: "#000",
   },
+
+  // --- F&B GRID STYLES ---
   fnbGridContainer: {
     padding: 16,
   },
@@ -357,6 +345,8 @@ export const othersStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
   },
+
+  // --- UPDATED QUANTITY CONTROLS ---
   quantityControlsNew: {
     flexDirection: "row",
     alignItems: "center",
@@ -394,6 +384,8 @@ export const othersStyles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "bold",
   },
+
+  // --- BUTTON CONTAINERS ---
   confirmButtonContainer: {
     padding: 16,
     backgroundColor: "#000",
@@ -401,10 +393,8 @@ export const othersStyles = StyleSheet.create({
     borderTopColor: "#333",
   },
   confirmButton: {
+    ...commonStyles.buttonBase,
     backgroundColor: "#fff",
-    borderRadius: 8,
-    paddingVertical: 16,
-    alignItems: "center",
   },
   confirmButtonText: {
     color: "#000",
@@ -412,15 +402,8 @@ export const othersStyles = StyleSheet.create({
     fontWeight: "bold",
   },
 
-  // Subtotal section styles - similar to booking screen
-  seatSubtotalContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    borderWidth: 1,
-    borderColor: "#333",
-    borderRadius: 8,
-    padding: 10,
-  },
+  // --- SUBTOTAL SECTION STYLES ---
+  seatSubtotalContainer: commonStyles.subtotalContainer,
   selectedItemsDisplay: {
     flex: 1,
     padding: 12,
@@ -452,11 +435,7 @@ export const othersStyles = StyleSheet.create({
     fontWeight: "500",
     textAlign: "center",
   },
-  subtotalDisplayNew: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  subtotalDisplayNew: commonStyles.subtotalDisplay,
   itemsDisplayNew: {
     flex: 1,
     alignItems: "center",
@@ -464,26 +443,9 @@ export const othersStyles = StyleSheet.create({
     borderRightWidth: 1,
     borderRightColor: "#333",
   },
-  subtotalTextNew: {
-    color: "white",
-    fontSize: 12,
-    marginBottom: 4,
-  },
-  subtotalAmountNew: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  subtotalDisplay: {
-    padding: 12,
-    minWidth: 120,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  disabledButton: {
-    backgroundColor: "#555",
-    opacity: 0.7,
-  },
+  subtotalTextNew: commonStyles.subtotalText,
+  subtotalAmountNew: commonStyles.subtotalAmount,
+  subtotalDisplay: commonStyles.subtotalDisplay,
 });
 
 export default othersStyles;

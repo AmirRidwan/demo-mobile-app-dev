@@ -1,35 +1,43 @@
 import { StyleSheet } from "react-native";
 import { Colors } from "@/constants/Colors";
+import { commonStyles } from "./commonStyles";
 
 export const paymentStyles = StyleSheet.create({
+  // --- CONTAINER STYLES ---
   container: {
-    flex: 1,
-    backgroundColor: "#000",
+    ...commonStyles.darkContainer,
   },
   centered: {
     justifyContent: "center",
     alignItems: "center",
   },
+
+  // --- HEADER STYLES ---
   darkHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingTop: 50,
+    ...commonStyles.darkHeader,
     paddingBottom: 16,
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
+    justifyContent: "center", // Center the title
   },
   darkHeaderTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
-    textAlign: "center",
-    flex: 1,
+    ...commonStyles.darkHeaderTitle,
+    textAlign: "center", // Ensure title is centered
   },
   backButtonOverlay: {
+    position: "absolute",
+    top: 50,
+    left: 15,
+    zIndex: 1000,
     padding: 8,
     borderRadius: 20,
-    marginRight: 8,
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   header: {
     fontSize: 18,
@@ -38,6 +46,8 @@ export const paymentStyles = StyleSheet.create({
     textAlign: "center",
     marginVertical: 16,
   },
+
+  // --- SUMMARY CONTAINER ---
   summaryContainer: {
     backgroundColor: "#121212",
     margin: 16,
@@ -50,6 +60,8 @@ export const paymentStyles = StyleSheet.create({
     textAlign: "center",
     paddingVertical: 12,
   },
+
+  // --- MOVIE INFO SECTION ---
   movieInfoContainer: {
     flexDirection: "row",
     padding: 16,
@@ -61,7 +73,7 @@ export const paymentStyles = StyleSheet.create({
     borderRadius: 8,
     overflow: "hidden",
     marginRight: 16,
-    backgroundColor: "#333", // Placeholder color for missing poster
+    backgroundColor: "#333",
   },
   posterImage: {
     width: "100%",
@@ -80,9 +92,7 @@ export const paymentStyles = StyleSheet.create({
   movieDetailsGrid: {
     flexDirection: "column",
   },
-  movieDetailItem: {
-    marginBottom: 4,
-  },
+  movieDetailItem: commonStyles.movieDetailItem,
   movieGenre: {
     fontSize: 14,
     color: "#aaa",
@@ -99,6 +109,8 @@ export const paymentStyles = StyleSheet.create({
     fontSize: 14,
     color: "#aaa",
   },
+
+  // --- TICKET CONTAINER ---
   ticketContainer: {
     borderWidth: 1,
     borderColor: "#333",
@@ -106,11 +118,12 @@ export const paymentStyles = StyleSheet.create({
     overflow: "hidden",
     marginBottom: 0,
   },
+
+  // --- DASHED LINE ---
   dashedLineContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 0,
     position: "relative",
     height: 1,
   },
@@ -136,6 +149,8 @@ export const paymentStyles = StyleSheet.create({
   rightCircle: {
     right: -10,
   },
+
+  // --- SCREENING INFO ---
   screeningInfoContainer: {
     padding: 16,
     borderBottomWidth: 0,
@@ -160,8 +175,8 @@ export const paymentStyles = StyleSheet.create({
     flexWrap: "wrap",
   },
   gridItem: {
-    width: "33%", // Changed to 3 items in a row as per screenshot
-    backgroundColor: "transparent", // Remove background color
+    width: "33%",
+    backgroundColor: "transparent",
     padding: 8,
   },
   infoLabel: {
@@ -174,6 +189,8 @@ export const paymentStyles = StyleSheet.create({
     color: "#fff",
     fontWeight: "600",
   },
+
+  // --- PAYMENT SECTIONS ---
   ticketsContainer: {
     padding: 16,
     borderBottomWidth: 1,
@@ -206,6 +223,8 @@ export const paymentStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#333",
   },
+
+  // --- FOOD & BEVERAGE SECTION ---
   fnbContainer: {
     padding: 16,
     borderBottomWidth: 1,
@@ -225,11 +244,15 @@ export const paymentStyles = StyleSheet.create({
     color: "#fff",
     fontWeight: "500",
   },
+
+  // --- CHARGES SECTION ---
   chargesContainer: {
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#333",
   },
+
+  // --- PROMO CODE SECTION ---
   promoContainer: {
     padding: 16,
     borderBottomWidth: 1,
@@ -249,6 +272,8 @@ export const paymentStyles = StyleSheet.create({
     width: 150,
     color: "#fff",
   },
+
+  // --- TOTAL SECTION ---
   totalContainer: {
     padding: 16,
     flexDirection: "row",
@@ -265,20 +290,19 @@ export const paymentStyles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
   },
+
+  // --- BUTTONS ---
   proceedButton: {
-    backgroundColor: "grey",
-    padding: 16,
-    borderRadius: 8,
-    alignItems: "center",
+    ...commonStyles.buttonBase,
+    ...commonStyles.secondaryButton,
     margin: 16,
   },
   proceedButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
+    ...commonStyles.buttonText,
+    ...commonStyles.secondaryButtonText,
   },
   activeButton: {
-    backgroundColor: "grey", // Consistent blue color
+    backgroundColor: "#666", // Changed from Colors.light.tint to match other buttons
   },
   backButton: {
     position: "absolute",
@@ -286,9 +310,9 @@ export const paymentStyles = StyleSheet.create({
     left: 16,
     zIndex: 10,
   },
-  disabledButton: {
-    opacity: 0.5,
-  },
+  disabledButton: commonStyles.disabledButton,
+
+  // --- PAYMENT METHODS ---
   paymentMethodsContainer: {
     padding: 16,
     flex: 1,
@@ -297,6 +321,7 @@ export const paymentStyles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 20,
+    color: "#fff",
   },
   paymentOption: {
     flexDirection: "row",
@@ -304,19 +329,17 @@ export const paymentStyles = StyleSheet.create({
     padding: 16,
     backgroundColor: "#1a1a1a",
     borderRadius: 8,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: "#333",
+    marginBottom: 16,
   },
   selectedPayment: {
     borderColor: Colors.light.tint,
     borderWidth: 2,
   },
   paymentIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: "rgba(66, 133, 244, 0.1)",
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#333",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 16,
@@ -327,15 +350,18 @@ export const paymentStyles = StyleSheet.create({
   paymentOptionText: {
     fontSize: 16,
     fontWeight: "600",
+    color: "#fff",
     marginBottom: 4,
   },
   paymentDescription: {
     fontSize: 14,
     color: "#aaa",
   },
-  // Transaction form styles
+
+  // --- TRANSACTION FORM ---
   transactionContainer: {
     flex: 1,
+    backgroundColor: "#000",
   },
   transactionHeader: {
     flexDirection: "row",
@@ -344,6 +370,7 @@ export const paymentStyles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 60,
     paddingBottom: 16,
+    backgroundColor: "#000",
   },
   backButtonTransaction: {
     padding: 0,
@@ -351,6 +378,7 @@ export const paymentStyles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "bold",
+    color: "#fff",
   },
   amountContainer: {
     alignItems: "center",
@@ -367,6 +395,7 @@ export const paymentStyles = StyleSheet.create({
   amount: {
     fontSize: 32,
     fontWeight: "bold",
+    color: "#fff",
   },
   formContainer: {
     paddingHorizontal: 16,
@@ -376,26 +405,16 @@ export const paymentStyles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 16,
+    color: "#fff",
   },
-  inputGroup: {
-    marginBottom: 16,
-  },
-  inputLabel: {
-    marginBottom: 8,
-    fontWeight: "500",
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#333",
-    borderRadius: 8,
-    color: "#ccc",
-    padding: 12,
-    fontSize: 16,
-    backgroundColor: "#1a1a1a",
-  },
+  inputGroup: commonStyles.inputGroup,
+  inputLabel: commonStyles.inputLabel,
+  input: commonStyles.input,
   inputRow: {
     flexDirection: "row",
   },
+
+  // --- CRYPTO OPTIONS ---
   cryptoOptions: {
     flexDirection: "row",
     marginBottom: 16,
@@ -420,6 +439,7 @@ export const paymentStyles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     marginTop: 16,
+    backgroundColor: "#1a1a1a",
   },
   noteText: {
     fontSize: 12,
@@ -427,6 +447,8 @@ export const paymentStyles = StyleSheet.create({
     flex: 1,
     marginLeft: 8,
   },
+
+  // --- ACTION BUTTONS ---
   actions: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -457,7 +479,8 @@ export const paymentStyles = StyleSheet.create({
     color: "white",
     fontWeight: "bold",
   },
-  // Success page styles
+
+  // --- SUCCESS PAGE ---
   successContainer: {
     alignItems: "center",
     paddingHorizontal: 16,
@@ -471,11 +494,13 @@ export const paymentStyles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 10,
+    color: "#fff",
   },
   successMessage: {
     fontSize: 16,
     textAlign: "center",
     marginBottom: 30,
+    color: "#ccc",
   },
   ticketDetails: {
     width: "100%",
@@ -483,6 +508,7 @@ export const paymentStyles = StyleSheet.create({
   },
   seatsText: {
     marginTop: 5,
+    color: "#fff",
   },
   bookingId: {
     marginTop: 10,
@@ -498,13 +524,15 @@ export const paymentStyles = StyleSheet.create({
     marginTop: 8,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: "#ddd",
+    borderTopColor: "#333",
   },
   totalText: {
     fontWeight: "600",
+    color: "#fff",
   },
   totalAmount: {
     fontWeight: "600",
+    color: "#fff",
   },
   buttonContainer: {
     flexDirection: "row",
@@ -517,9 +545,109 @@ export const paymentStyles = StyleSheet.create({
   viewTicketsButton: {
     backgroundColor: Colors.light.tint,
     flex: 1,
+    ...commonStyles.buttonBase,
   },
   homeButton: {
     backgroundColor: "#666",
     flex: 1,
+    ...commonStyles.buttonBase,
+  },
+  instructionText: {
+    fontSize: 16,
+    color: "#fff",
+    marginBottom: 28,
+    marginTop: 12,
+  },
+
+  // CARD PAYMENT SCREEN
+  cardPaymentScreen: {
+    flex: 1,
+    backgroundColor: "#000",
+  },
+
+  cardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#000",
+    paddingTop: 50,
+    paddingBottom: 15,
+    paddingHorizontal: 16,
+    borderBottomWidth: 0,
+  },
+
+  cardPaymentContainer: {
+    padding: 16,
+    flex: 1,
+  },
+
+  cardInstructionText: {
+    fontSize: 16,
+    color: "#fff",
+    marginBottom: 20,
+    marginTop: 10,
+  },
+
+  cardInputGroup: {
+    marginBottom: 20,
+  },
+
+  cardInputLabel: {
+    fontSize: 14,
+    color: "#fff",
+    marginBottom: 8,
+  },
+
+  cardInput: {
+    backgroundColor: "#333",
+    borderRadius: 4,
+    padding: 12,
+    color: "#fff",
+    fontSize: 16,
+  },
+
+  cardInputRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 30,
+  },
+
+  cardPayButton: {
+    backgroundColor: "#666",
+    padding: 16,
+    borderRadius: 4,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+
+  cardPayButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+
+  saveCardContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: "#fff",
+    marginRight: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  checkboxChecked: {
+    backgroundColor: Colors.light.tint,
+    borderColor: Colors.light.tint,
+  },
+
+  saveCardText: {
+    color: "#fff",
+    fontSize: 14,
   },
 });

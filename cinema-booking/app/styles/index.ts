@@ -1,28 +1,18 @@
 import { StyleSheet } from "react-native";
 import { Colors } from "@/constants/Colors";
+import { commonStyles } from "./commonStyles";
 
 export const styles = StyleSheet.create({
   // Container styles
   container: {
-    flex: 1,
+    ...commonStyles.container,
     padding: 16,
   },
-  screenContainer: {
-    flex: 1,
-    padding: 16,
-    paddingTop: 60,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 16,
-  },
+  screenContainer: commonStyles.screenContainer,
+  centerContainer: commonStyles.centerContainer,
 
   // Section styles
-  section: {
-    marginBottom: 24,
-  },
+  section: commonStyles.section,
   sectionTitle: {
     marginBottom: 16,
   },
@@ -39,11 +29,7 @@ export const styles = StyleSheet.create({
   },
 
   // Card styles
-  card: {
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-  },
+  card: commonStyles.card,
 
   // Item styles
   itemContainer: {
@@ -62,18 +48,9 @@ export const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  errorContainer: {
-    height: 200,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 16,
-  },
-  errorText: {
-    textAlign: "center",
-  },
-  loadingText: {
-    marginTop: 16,
-  },
+  errorContainer: commonStyles.errorContainer,
+  errorText: commonStyles.errorText,
+  loadingText: commonStyles.loadingText,
 
   // Movie screen specific styles
   movieItem: {
@@ -91,6 +68,19 @@ export const styles = StyleSheet.create({
   movieTitle: {
     marginTop: 8,
     textAlign: "center",
+  },
+
+  actionButton: {
+    backgroundColor: "#ff5252",
+    padding: 10,
+    borderRadius: 5,
+    alignItems: "center",
+    marginHorizontal: 16,
+    marginBottom: 16,
+  },
+  actionButtonText: {
+    color: "white",
+    fontWeight: "bold",
   },
 });
 
@@ -120,8 +110,12 @@ export const getMovieItemStyles = (width: number) => {
   };
 };
 
-// Re-export booking styles for convenience
+// Export common styles
+export { commonStyles };
+
+// Re-export other style modules for convenience
 export { bookingStyles } from "@/app/styles/bookingStyles";
 export { movieStyles } from "@/app/styles/movieStyles";
 export { othersStyles } from "@/app/styles/othersStyles";
+export { paymentStyles } from "@/app/styles/paymentStyles";
 export default styles;

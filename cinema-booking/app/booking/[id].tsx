@@ -21,6 +21,7 @@ import { Movie, Screening, Seat, Booking } from "@/types";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import API_CONFIG from "@/utils/api";
 import { bookingStyles } from "@/app/styles/bookingStyles";
+import { BackButton } from "@/components/BackButton";
 
 // Define a type for formatted date
 interface FormattedDate {
@@ -267,7 +268,12 @@ export default function BookingScreen() {
     setSubtotal(0);
 
     if (selectedHall && selectedDate && selectedLocation && timeSlot) {
-      fetchScreeningWithParams(movieId, selectedHall, selectedLocation, selectedDate);
+      fetchScreeningWithParams(
+        movieId,
+        selectedHall,
+        selectedLocation,
+        selectedDate
+      );
     }
   };
 
@@ -561,17 +567,11 @@ export default function BookingScreen() {
     <ThemedView style={{ flex: 1 }}>
       {/* Header with back button */}
       <ThemedView style={bookingStyles.darkHeader}>
-        <TouchableOpacity
-          style={bookingStyles.backButtonOverlay}
-          onPress={() => router.back()}
-          activeOpacity={0.7}
-        >
-          <AntDesign
-            name="arrowleft"
-            size={24}
-            color={colorScheme === "dark" ? "white" : "black"}
-          />
-        </TouchableOpacity>
+        <BackButton
+          color="#fff"
+          defaultPath={`/movie/${movieId}`}
+          onPress={() => router.push(`/movie/${movieId}`)}
+        />
         <ThemedText type="title" style={bookingStyles.darkHeaderTitle}>
           Ticket Booking
         </ThemedText>

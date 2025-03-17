@@ -21,7 +21,9 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { Booking, FnBItem } from "@/types";
 import { useNetworkStatus } from "@/hooks/useNetworkStatus";
 import API_CONFIG from "@/utils/api";
-import othersStyles from "@/app/styles/othersStyles";
+import { othersStyles } from "@/app/styles";
+import { commonStyles } from "@/app/styles/commonStyles";
+import { BackButton } from "@/components/BackButton";
 
 type TabType = "Combo" | "Food/Snacks" | "Beverages";
 
@@ -188,6 +190,7 @@ export default function othersScreen() {
 
     if (booking) {
       try {
+        // Make sure to set fnbItems to empty array and fnbTotal to 0
         const updatedBooking = {
           ...booking,
           fnbItems: [],
@@ -309,29 +312,56 @@ export default function othersScreen() {
 
   return (
     <ThemedView style={othersStyles.containerNew}>
-      {/* Header with back button */}
-      <View style={othersStyles.headerNew}>
-        <TouchableOpacity
-          style={othersStyles.backButtonNew}
-          onPress={() => {
-            if (booking && booking.movie.id) {
-              router.push(`/booking/${booking.movie.id}`);
-            } else {
-              router.back();
-            }
+      {/* Fix for missing header */}
+      <View
+        style={{
+          backgroundColor: "#000",
+          width: "100%",
+          paddingTop: 50, // Safe area for notch phones
+          paddingBottom: 10,
+          zIndex: 10, // Ensure it's above other elements
+        }}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            paddingHorizontal: 16,
           }}
         >
-          <AntDesign name="arrowleft" size={24} color="white" />
-        </TouchableOpacity>
-        <ThemedText style={othersStyles.headerTitleNew}>
-          Beverages & Food
-        </ThemedText>
-        <TouchableOpacity
-          style={othersStyles.skipButtonNew}
-          onPress={handleSkip}
-        >
-          <ThemedText style={othersStyles.skipTextNew}>Skip</ThemedText>
-        </TouchableOpacity>
+          {/* Back button */}
+          <TouchableOpacity
+            style={{ padding: 8 }}
+            onPress={() => {
+              if (booking && booking.movie.id) {
+                router.push(`/booking/${booking.movie.id}`);
+              } else {
+                router.back();
+              }
+            }}
+          >
+            <AntDesign name="arrowleft" size={24} color="white" />
+          </TouchableOpacity>
+
+          {/* Title */}
+          <ThemedText
+            style={{
+              color: "white",
+              fontSize: 18,
+              fontWeight: "bold",
+            }}
+          >
+            Food & Beverage
+          </ThemedText>
+
+          {/* Skip button */}
+          <TouchableOpacity style={{ padding: 8 }} onPress={handleSkip}>
+            <ThemedText style={{ color: "white", fontSize: 15 }}>
+              Skip
+            </ThemedText>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Tab Navigation - Updated to match movie details screen */}

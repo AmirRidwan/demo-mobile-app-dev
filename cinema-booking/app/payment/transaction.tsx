@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, AntDesign } from "@expo/vector-icons";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
@@ -23,6 +23,7 @@ import {
   isValidCVV,
   isValidExpirationDate,
 } from "@/utils/paymentHelpers";
+import { BackButton } from "@/components/BackButton";
 
 // Simple IBAN validation (very basic)
 const validateIBAN = (iban: string) => iban.length >= 15;
@@ -43,9 +44,9 @@ export default function PaymentDetailsScreen() {
 
   // Credit Card state
   const [cardNumber, setCardNumber] = useState("");
-  const [cardName, setCardName] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
+  const [saveCardInfo, setSaveCardInfo] = useState(false);
 
   // Bank Transfer state
   const [accountName, setAccountName] = useState("");
@@ -89,7 +90,7 @@ export default function PaymentDetailsScreen() {
         cardNumber: cardNumber.replace(/\s+/g, ""),
         cvv,
         expirationDate: expiry,
-        cardHolderName: cardName,
+        cardHolderName: "",
       };
 
       if (!isPaymentDataValid(paymentDetails)) {
@@ -98,8 +99,6 @@ export default function PaymentDetailsScreen() {
           !isValidCardNumber(paymentDetails.cardNumber)
         ) {
           errorMessage = "Please enter a valid 16-digit card number";
-        } else if (!cardName.trim()) {
-          errorMessage = "Please enter the name on the card";
         } else if (
           !paymentDetails.expirationDate ||
           !isValidExpirationDate(paymentDetails.expirationDate)
@@ -172,18 +171,18 @@ export default function PaymentDetailsScreen() {
     switch (paymentMethod) {
       case "debit":
         return (
-          <ThemedView style={paymentStyles.formContainer}>
-            <ThemedText style={paymentStyles.formTitle}>
-              Debit Card Payment
+          <ThemedView style={paymentStyles.cardPaymentContainer}>
+            <ThemedText style={paymentStyles.cardInstructionText}>
+              Please enter your card details
             </ThemedText>
 
-            <View style={paymentStyles.inputGroup}>
-              <ThemedText style={paymentStyles.inputLabel}>
-                Card Number
+            <View style={paymentStyles.cardInputGroup}>
+              <ThemedText style={paymentStyles.cardInputLabel}>
+                Card number
               </ThemedText>
               <TextInput
-                style={paymentStyles.input}
-                placeholder="1234 5678 9012 3456"
+                style={paymentStyles.cardInput}
+                placeholder="Enter card number"
                 placeholderTextColor="#666"
                 value={cardNumber}
                 onChangeText={setCardNumber}
@@ -192,28 +191,18 @@ export default function PaymentDetailsScreen() {
               />
             </View>
 
-            <View style={paymentStyles.inputGroup}>
-              <ThemedText style={paymentStyles.inputLabel}>
-                Name on Card
-              </ThemedText>
-              <TextInput
-                style={paymentStyles.input}
-                placeholder="John Doe"
-                placeholderTextColor="#666"
-                value={cardName}
-                onChangeText={setCardName}
-              />
-            </View>
-
-            <View style={paymentStyles.inputRow}>
+            <View style={paymentStyles.cardInputRow}>
               <View
-                style={[paymentStyles.inputGroup, { flex: 1, marginRight: 10 }]}
+                style={[
+                  paymentStyles.cardInputGroup,
+                  { flex: 1, marginRight: 10 },
+                ]}
               >
-                <ThemedText style={paymentStyles.inputLabel}>
-                  Expiry Date
+                <ThemedText style={paymentStyles.cardInputLabel}>
+                  Expiry date
                 </ThemedText>
                 <TextInput
-                  style={paymentStyles.input}
+                  style={paymentStyles.cardInput}
                   placeholder="MM/YY"
                   placeholderTextColor="#666"
                   value={expiry}
@@ -222,11 +211,13 @@ export default function PaymentDetailsScreen() {
                 />
               </View>
 
-              <View style={[paymentStyles.inputGroup, { flex: 1 }]}>
-                <ThemedText style={paymentStyles.inputLabel}>CVV</ThemedText>
+              <View style={[paymentStyles.cardInputGroup, { flex: 1 }]}>
+                <ThemedText style={paymentStyles.cardInputLabel}>
+                  CVV2
+                </ThemedText>
                 <TextInput
-                  style={paymentStyles.input}
-                  placeholder="123"
+                  style={paymentStyles.cardInput}
+                  placeholder="Enter CVV"
                   placeholderTextColor="#666"
                   value={cvv}
                   onChangeText={setCvv}
@@ -236,6 +227,42 @@ export default function PaymentDetailsScreen() {
                 />
               </View>
             </View>
+
+            <TouchableOpacity
+              style={[
+                paymentStyles.cardPayButton,
+                processing && paymentStyles.disabledButton,
+              ]}
+              onPress={handlePayment}
+              disabled={processing}
+            >
+              {processing ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <ThemedText style={paymentStyles.cardPayButtonText}>
+                  Pay RM {grandTotal.toFixed(0)}
+                </ThemedText>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={paymentStyles.saveCardContainer}
+              onPress={() => setSaveCardInfo(!saveCardInfo)}
+            >
+              <View
+                style={[
+                  paymentStyles.checkbox,
+                  saveCardInfo ? paymentStyles.checkboxChecked : {},
+                ]}
+              >
+                {saveCardInfo && (
+                  <AntDesign name="check" size={16} color="#fff" />
+                )}
+              </View>
+              <ThemedText style={paymentStyles.saveCardText}>
+                Save card info for future transactions
+              </ThemedText>
+            </TouchableOpacity>
           </ThemedView>
         );
 
@@ -282,6 +309,23 @@ export default function PaymentDetailsScreen() {
                 onChangeText={setBankName}
               />
             </View>
+
+            <TouchableOpacity
+              style={[
+                paymentStyles.cardPayButton,
+                processing && paymentStyles.disabledButton,
+              ]}
+              onPress={handlePayment}
+              disabled={processing}
+            >
+              {processing ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <ThemedText style={paymentStyles.cardPayButtonText}>
+                  Pay RM {grandTotal.toFixed(0)}
+                </ThemedText>
+              )}
+            </TouchableOpacity>
           </ThemedView>
         );
 
@@ -343,6 +387,23 @@ export default function PaymentDetailsScreen() {
                 Transactions cannot be reversed.
               </ThemedText>
             </ThemedView>
+
+            <TouchableOpacity
+              style={[
+                paymentStyles.cardPayButton,
+                processing && paymentStyles.disabledButton,
+              ]}
+              onPress={handlePayment}
+              disabled={processing}
+            >
+              {processing ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <ThemedText style={paymentStyles.cardPayButtonText}>
+                  Pay RM {grandTotal.toFixed(0)}
+                </ThemedText>
+              )}
+            </TouchableOpacity>
           </ThemedView>
         );
 
@@ -352,61 +413,15 @@ export default function PaymentDetailsScreen() {
   };
 
   return (
-    <ScrollView style={paymentStyles.transactionContainer}>
-      <ThemedView style={paymentStyles.transactionHeader}>
-        <TouchableOpacity
-          style={paymentStyles.backButtonTransaction}
-          onPress={() => router.back()}
-        >
-          <Ionicons
-            name="arrow-back"
-            size={24}
-            color={Colors[colorScheme ?? "light"].text}
-          />
-        </TouchableOpacity>
-        <ThemedText style={paymentStyles.headerTitle}>
-          Payment Details
-        </ThemedText>
-        <View style={{ width: 24 }} />
-      </ThemedView>
-
-      <ThemedView style={paymentStyles.amountContainer}>
-        <ThemedText style={paymentStyles.amountLabel}>
-          Payment Amount
-        </ThemedText>
-        <ThemedText style={paymentStyles.amount}>
-          RM {grandTotal.toFixed(0)}
+    <ThemedView style={paymentStyles.cardPaymentScreen}>
+      <ThemedView style={paymentStyles.cardHeader}>
+        <BackButton color="#fff" style={paymentStyles.backButtonOverlay} />
+        <ThemedText style={paymentStyles.darkHeaderTitle}>
+          Card payment
         </ThemedText>
       </ThemedView>
 
       {renderPaymentForm()}
-
-      <ThemedView style={paymentStyles.actions}>
-        <TouchableOpacity
-          style={paymentStyles.cancelButton}
-          onPress={() => router.back()}
-          disabled={processing}
-        >
-          <ThemedText style={paymentStyles.cancelButtonText}>Back</ThemedText>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            paymentStyles.payButton,
-            processing && paymentStyles.disabledButton,
-          ]}
-          onPress={handlePayment}
-          disabled={processing}
-        >
-          {processing ? (
-            <ActivityIndicator size="small" color="#FFFFFF" />
-          ) : (
-            <ThemedText style={paymentStyles.payButtonText}>
-              Complete Payment
-            </ThemedText>
-          )}
-        </TouchableOpacity>
-      </ThemedView>
-    </ScrollView>
+    </ThemedView>
   );
 }
