@@ -38,10 +38,12 @@ export type SeatType = {
 };
 
 export default function Movie({
+    id,
     locations,
     seats,
     ...props
 }: {
+    id: number;
     locations: LocationType[];
     seats: SeatType[];
 }) {
@@ -49,11 +51,16 @@ export default function Movie({
     const [date, setDate] = useState<Date>();
     const [seat, setSeat] = useState<SeatType[]>(seats);
 
-    const selectedSeats = seat.filter((s) => s.status === 'selected');
+    const selectedSeatsId = seat.reduce<string[]>((acc, s) => {
+        if (s.status === 'selected') {
+            acc.push(s.id);
+        }
+        return acc;
+    }, []);
 
     useEffect(() => {
-        console.log(seat);
-    }, [seat]);
+        console.log(selectedSeatsId);
+    }, [selectedSeatsId]);
     return (
         <>
             <AppHeader backBtn={true} title="Ticket Booking" />
@@ -232,15 +239,15 @@ export default function Movie({
                             Selected Seat
                         </Label>
                         <div className="mt-2 flex max-w-full flex-wrap items-center justify-center gap-1">
-                            {selectedSeats.length === 0 ? (
+                            {selectedSeatsId.length === 0 ? (
                                 <p className="text-muted-foreground text-xs">No seat selected</p>
                             ) : (
-                                selectedSeats.map((s) => (
+                                selectedSeatsId.map((s) => (
                                     <div
-                                        key={s.id}
+                                        key={s}
                                         className="flex items-center justify-center border-1 p-1.5 text-xs"
                                     >
-                                        {s.id}
+                                        {s}
                                     </div>
                                 ))
                             )}
@@ -262,7 +269,7 @@ export default function Movie({
             </AppLayout>
             <AppBottomNavLayout className="p-3">
                 <Button asChild className="w-full">
-                    <Link href="/book-ticket">Book Ticket</Link>
+                    <Link href={route('book.summary', [id, selectedSeatsId])}>Book Ticket</Link>
                 </Button>
             </AppBottomNavLayout>
         </>
