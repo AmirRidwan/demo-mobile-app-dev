@@ -1,4 +1,4 @@
-# HOWTO
+# Steps
 
 1. Document your codes as detail as possible.
 2. Clone this repository.
