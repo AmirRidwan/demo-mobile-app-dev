@@ -2,6 +2,7 @@ import express from 'express'
 import movieSeats from "../json/movieSeats.json" assert { type: "json" };
 
 const seatsManager = (io) => {
+	
 	io.on('connection', (socket) => {
 		console.log('Client connected');
 

@@ -78,7 +78,7 @@ export default TicketBooking = () => {
 
 	// GET AVAILABLE SHOWTIMES CALLED AFTER DATE IS SELECTED
 	const getAvailableTime = () => {
-		fetch(`${apiLink}/movie/movieTimes?date=${selectedDate}`, {
+		fetch(`${apiLink}/movie/movieTimes?id=${movieData.id}&date=${selectedDate}`, {
 			method: "GET",
 		})
 		.then((res) => res.json())
@@ -389,13 +389,14 @@ const TicketBookingStyles = StyleSheet.create({
 	container: {
 		flex: 1, 
 		backgroundColor: 'black', 
+		paddingTop: 15
 	},
 	scrollContainer: {
 		padding: 20,
 	},
 	headerButton: {
 		position: 'absolute',
-		top: 20,
+		top: 30,
 		left: 15,
 		zIndex: 100,
 		height: 20,

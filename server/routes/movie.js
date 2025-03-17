@@ -4,8 +4,7 @@ import express from 'express'
 import movieList from "../json/movieList.json" assert { type: "json" };
 import cinemaLocations from "../json/cinemaLocations.json" assert { type: "json" };
 
-export const movie  = express.Router()
-
+const movie  = express.Router()
 
 movie.get("/movieList", (req, res) => {
     try {
@@ -41,6 +40,7 @@ movie.get("/cinemaList", (req, res) => {
 
 movie.get("/movieTimes", (req, res) => {
     try {
+        const movieId = req.query.id
         // const date = req.query.date; // Get 'date' from query parameters
     
         // HARD CODED TIME ASSUMED TO BE IN DB IF IN PRODUCTION
@@ -58,3 +58,5 @@ movie.get("/movieTimes", (req, res) => {
         });
     }
 });
+
+export default movie

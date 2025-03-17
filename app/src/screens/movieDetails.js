@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 16,
 		height: 50,
 		position: 'absolute',
-		top: 0,
+		top: 20,
 		left: 0,
 		right: 0,
 		zIndex: 10,
