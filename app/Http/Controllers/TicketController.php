@@ -12,11 +12,16 @@ class TicketController extends Controller
     public function bookTicket($id)
     {
         $locations = json_decode(file_get_contents(public_path('/json/cinema-location.json')));
+        $seats = json_decode(file_get_contents(public_path('/json/seat-status.json')));
 
-        // dd($locations);
+        // dd($seats);
 
         return Inertia::render('book-ticket', [
-            'locations' => $locations
+            'locations' => $locations,
+            'seats' => $seats
         ]);
+
+        // tdl: set seat status to lock when user proceed to next step.
+        // then only set seat to booked after completing payment
     }
 }

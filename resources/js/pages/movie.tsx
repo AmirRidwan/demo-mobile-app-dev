@@ -86,7 +86,11 @@ export default function Movie({
                     <div className="w-32">
                         <AspectRatio ratio={2 / 3}>
                             <img
-                                src={`https://image.tmdb.org/t/p/w342${details.poster_path}`}
+                                src={
+                                    details.poster_path
+                                        ? `https://image.tmdb.org/t/p/w342${details.poster_path}`
+                                        : '/img/avatar.jpg'
+                                }
                                 className="h-full w-full rounded-md object-cover"
                             />
                         </AspectRatio>
@@ -177,22 +181,31 @@ export default function Movie({
                                     </div>
                                 </div>
                             </div>
-                            <Separator />
+                            {director && (
+                                <>
+                                    <Separator />
 
-                            <div className="space-y-3">
-                                <div>
-                                    <SectionTitle viewMore={false}>Director</SectionTitle>
-                                    <p className="text-sm leading-[150%]">{director.name}</p>
-                                </div>
-                            </div>
-                            <Separator />
-
-                            <div className="space-y-3">
-                                <div>
-                                    <SectionTitle viewMore={false}>Writer</SectionTitle>
-                                    <p className="text-sm leading-[150%]">{writer.name}</p>
-                                </div>
-                            </div>
+                                    <div className="space-y-3">
+                                        <div>
+                                            <SectionTitle viewMore={false}>Director</SectionTitle>
+                                            <p className="text-sm leading-[150%]">
+                                                {director.name}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                            {writer && (
+                                <>
+                                    <Separator />
+                                    <div className="space-y-3">
+                                        <div>
+                                            <SectionTitle viewMore={false}>Writer</SectionTitle>
+                                            <p className="text-sm leading-[150%]">{writer.name}</p>
+                                        </div>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </TabsContent>
 

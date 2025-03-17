@@ -8,7 +8,11 @@ export default function MovieThumbnail({ movie, ...props }: { movie: MovieType }
             <div className="flex w-48 flex-none flex-col pb-4">
                 <AspectRatio ratio={2 / 3}>
                     <img
-                        src={`https://image.tmdb.org/t/p/w342${movie.poster_path}`}
+                        src={
+                            movie.poster_path
+                                ? `https://image.tmdb.org/t/p/w342${movie.poster_path}`
+                                : '/img/avatar.jpg'
+                        }
                         className="h-full w-full rounded-md object-cover"
                     />
                 </AspectRatio>
