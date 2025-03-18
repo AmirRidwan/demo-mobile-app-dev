@@ -1,8 +1,8 @@
 # HOWTO
 
 This project uses the following language:
-Backend: Laravel -v12
-Frontend: React.js - v19 (NOT REACT NATIVE) & Inertia.js
+1. Backend: Laravel -v12
+2. Frontend: React.js - v19 (NOT REACT NATIVE) & Inertia.js
 
 To run:
 1. Make sure composer, php and laravel are installed.
