@@ -63,6 +63,8 @@ const seatsManager = (io) => {
 			//     })
 			// }
 
+			console.log(req.body)
+
 			if (!movieSeats[movieId]) {
 				movieSeats[movieId] = {};
 			}

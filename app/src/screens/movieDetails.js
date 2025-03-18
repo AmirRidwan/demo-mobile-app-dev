@@ -159,6 +159,7 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		alignItems: 'center',
+		paddingTop: 30,
 		paddingHorizontal: 16,
 		height: 50,
 		position: 'absolute',
@@ -349,7 +350,7 @@ const styles = StyleSheet.create({
 		backgroundColor: '#333',
 		paddingVertical: 16,
 		borderRadius: 8,
-		marginVertical: 16,
+		marginVertical: 25,
 		alignItems: 'center',
 	},
 	bookButtonText: {
