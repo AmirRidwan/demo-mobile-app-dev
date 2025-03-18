@@ -32,7 +32,7 @@ export default function Movie({
     return (
         <div className="h-dvh">
             <AppHeader backBtn={true} title="Booking Summary" />
-            <AppLayout className="pb-12">
+            <AppLayout className="min-h-[700px]">
                 <div className="space-y-3 border p-3">
                     <div className="flex gap-4 py-1">
                         <div className="w-32">
@@ -119,9 +119,9 @@ export default function Movie({
                     </div>
                 </div>
             </AppLayout>
-            <AppBottomNavLayout className="w-full p-3">
+            <AppBottomNavLayout className="p-3">
                 <Button asChild className="w-full">
-                    <Link href={route('payment.success')}>Proceed to Payment</Link>
+                    <Link href={route('payment.success', { seats })}>Proceed to Payment</Link>
                 </Button>
             </AppBottomNavLayout>
         </div>
