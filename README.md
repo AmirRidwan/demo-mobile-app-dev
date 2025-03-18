@@ -15,7 +15,7 @@ Built using React Native. Run the following commands into the terminal:
 <ol>
     <li> "cd" into the project directory and then "cd ./app/"</li>
     <li> "npm i" to install all packages</li>
-    <li> Ensure that an android virtual device is available on the local machine with SDK of 16 and above
+    <li> Ensure that an android virtual device is available on the local machine with SDK of 24 and above
     <li> "npx react-native run-android"</li>
 </ol>
 
