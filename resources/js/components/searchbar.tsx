@@ -1,9 +1,10 @@
-import * as React from 'react';
-
 import { cn } from '@/lib/utils';
+import { useContext } from 'react';
+import { FilterContext, FilterContextType } from './context/filter-context';
 import { Button } from './ui/button';
 
 export default function Searchbar({ className, type, ...props }: React.ComponentProps<'input'>) {
+    const { filter, setFilter } = useContext<FilterContextType>(FilterContext);
     return (
         <div className="relative">
             <label>
@@ -25,6 +26,8 @@ export default function Searchbar({ className, type, ...props }: React.Component
 
                 <input
                     type={type}
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
                     data-slot="input"
                     className={cn(
                         'border-input file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground flex h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
@@ -38,8 +41,18 @@ export default function Searchbar({ className, type, ...props }: React.Component
             </label>
 
             {/* filter button */}
-            <Button className="absolute top-1/2 right-3 size-4.5 -translate-y-1/2 transform" variant="ghost">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="">
+            <Button
+                className="absolute top-1/2 right-3 size-4.5 -translate-y-1/2 transform"
+                variant="ghost"
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className=""
+                >
                     <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
