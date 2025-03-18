@@ -27,7 +27,7 @@ export default function Movie({
     seats: string[];
     price: string | number;
 }) {
-    const tax = parseFloat(+price * 0.1).toFixed(2);
+    const tax = (+price * 0.1).toFixed(2);
 
     return (
         <div className="h-dvh">
@@ -96,7 +96,7 @@ export default function Movie({
                             <Label className="">Tickets</Label>
                             <p className="text-xs text-zinc-500">Classic ticket x{seats.length}</p>
                         </div>
-                        <p>RM{parseFloat(price).toFixed(2)}</p>
+                        <p>RM{(+price).toFixed(2)}</p>
                     </div>
                     <div className="flex items-center justify-between">
                         <div className="w-3/5">
@@ -115,7 +115,7 @@ export default function Movie({
                     <Separator />
                     <div className="flex items-center justify-between">
                         <h3 className="fond-bold text-lg">Total amount payable</h3>
-                        RM{parseFloat(+price + +tax).toFixed(2)}
+                        RM{(+price + +tax).toFixed(2)}
                     </div>
                 </div>
             </AppLayout>

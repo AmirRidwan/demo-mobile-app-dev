@@ -127,8 +127,6 @@ export default function Movie({
     });
 
     function onSubmit(data: z.infer<typeof formSchema>) {
-        console.log(data);
-        // console.log(data)
         router.get(route('book.summary', { id, selectedSeatsId, subtotal, ...data }));
     }
 
