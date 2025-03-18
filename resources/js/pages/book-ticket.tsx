@@ -71,6 +71,10 @@ export default function Movie({
 
     const cinema = locations.find((c) => c.state == selectedState)?.locations ?? [];
 
+    const subtotal = seat
+        .filter((s) => s.status === 'selected')
+        .reduce((acc, s) => (acc += s.price), 0);
+
     const formSchema = z.object({
         // these array should be able to be generated via mapping the props. but idk why not working
         // thats why hard code
@@ -125,7 +129,7 @@ export default function Movie({
     function onSubmit(data: z.infer<typeof formSchema>) {
         console.log(data);
         // console.log(data)
-        router.get(route('book.summary', { id, selectedSeatsId, ...data }));
+        router.get(route('book.summary', { id, selectedSeatsId, subtotal, ...data }));
     }
 
     return (
@@ -405,12 +409,7 @@ export default function Movie({
                             Subtotal
                         </Label>
 
-                        <p className="text-sm">
-                            RM
-                            {seat
-                                .filter((s) => s.status === 'selected')
-                                .reduce((acc, s) => (acc += s.price), 0)}
-                        </p>
+                        <p className="text-sm">RM{subtotal}</p>
                     </div>
                 </div>
             </AppLayout>

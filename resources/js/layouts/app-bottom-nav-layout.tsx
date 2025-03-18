@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils';
 import { ReactNode } from 'react';
 
 const activeItemStyles = 'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
@@ -11,7 +12,7 @@ export function AppBottomNavLayout({
     className?: string;
 }) {
     return (
-        <div className={`sticky bottom-0 max-w-full border-t-1 bg-neutral-900 ${className}`}>
+        <div className={cn(`sticky bottom-0 max-w-full border-t-1 bg-neutral-900`, className)}>
             {children}
         </div>
     );

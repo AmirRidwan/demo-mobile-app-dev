@@ -30,13 +30,12 @@ class TicketController extends Controller
             'locations' => $locations,
             'seats' => $seats['record']
         ]);
-
-        // tdl: set seat status to lock when user proceed to next step.
-        // then only set seat to booked after completing payment
     }
 
     public function bookingSummary($id, Request $request)
     {
+
+        // dd($request->all());
 
         // fetch movie details
         $movie = Http::withHeaders([
@@ -57,7 +56,7 @@ class TicketController extends Controller
 
         // dd(json_encode($seats_res['record']));
 
-        // update seats
+        // lock seats
         foreach ($seats_res['record'] as $key => $seat) {
             if (in_array($seat['id'], $selected_seats)) {
                 $seats_res['record'][$key]['status'] = "locked";
@@ -80,7 +79,13 @@ class TicketController extends Controller
 
 
         return Inertia::render('booking-summary', [
-            'details' => $movie
+            'details' => $movie,
+            "state" => $request->state,
+            "date" => date('d M Y', strtotime($request->date)),
+            "location" => $request->location,
+            "time" => $request->time,
+            'seats' => $selected_seats,
+            'price' => $request->subtotal
         ]);
         // // return $request->all();
     }

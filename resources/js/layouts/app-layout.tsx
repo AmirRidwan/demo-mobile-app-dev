@@ -1,6 +1,15 @@
-export default function AppLayout({ children, ...props }: { children: React.ReactNode }) {
+import { cn } from '@/lib/utils';
+
+export default function AppLayout({
+    children,
+    className,
+    ...props
+}: {
+    className?: string;
+    children: React.ReactNode;
+}) {
     return (
-        <div {...props} className="relative space-y-3 p-4">
+        <div {...props} className={cn('relative space-y-3 p-4', className)}>
             {children}
         </div>
     );
