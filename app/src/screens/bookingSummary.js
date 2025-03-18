@@ -183,7 +183,7 @@ const BookingSummary = () => {
                         <Text style={BookingSummaryStyles.buttonText}>Back to Home</Text>
                     </Pressable>
                     :
-                    <Pressable style={BookingSummaryStyles.button} onPress={() => navigation.navigate('Payment', {  movieData, movieId, cinema, date, time, seats, subtotal, paid })}>
+                    <Pressable style={BookingSummaryStyles.button} onPress={() => navigation.navigate('Payment', { movieData, movieId, cinema, date, time, seats, subtotal })}>
                         <Text style={BookingSummaryStyles.buttonText}>Proceed to payment</Text>
                     </Pressable>
                 }
@@ -196,7 +196,7 @@ const BookingSummaryStyles = StyleSheet.create({
     heading: { color: '#fff', fontSize: 20, fontWeight: 'bold', marginBottom: 16 },
     headerButton: {
 		position: 'absolute',
-		top: 30,
+		top: 45,
 		left: 15,
 		zIndex: 100,
 		height: 20,
@@ -208,7 +208,7 @@ const BookingSummaryStyles = StyleSheet.create({
 		fontWeight: 'bold', 
 		textAlign: 'center',
 		paddingBottom: 15,
-        paddingTop: 30
+        paddingTop: 45
 	},
     container: {
         flex: 1, 
@@ -430,7 +430,8 @@ const BookingSummaryStyles = StyleSheet.create({
 
     buttonContainer: {
         paddingHorizontal: 10,
-        backgroundColor: 'black'
+        backgroundColor: 'black',
+        paddingBottom: 30
     },
     button: {
         marginTop: 20,

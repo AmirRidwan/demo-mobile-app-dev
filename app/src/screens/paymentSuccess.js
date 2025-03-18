@@ -1,10 +1,11 @@
 import React from 'react';
 import { SafeAreaView, View, Text, Pressable, StyleSheet, Image  } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 export default SuccessScreen = () => {
     const navigation = useNavigation();
-
+	const route = useRoute();
+	const  { movieData, movieId, cinema, date, time, seats, subtotal } = route.params 
 
 	return (
 		<SafeAreaView style={styles.container}>
@@ -24,7 +25,7 @@ export default SuccessScreen = () => {
 						<Text style={styles.buttonText}>⬅ Main menu</Text>
 					</Pressable>
 
-					<Pressable style={styles.button} onPress={() => navigation.navigate('BookingSummary')}>
+					<Pressable style={styles.button} onPress={() => navigation.navigate('BookingSummary',  { movieData, movieId, cinema, date, time, seats, subtotal, paid: true })}>
 						<Text style={styles.buttonText}>🎟 View ticket</Text>
 					</Pressable>
 				</View>

@@ -367,7 +367,7 @@ export default TicketBooking = () => {
 					<View style={TicketBookingStyles.bookingInfoContainer}>
 						<View style={TicketBookingStyles.summaryBox}>
 							<Text style={TicketBookingStyles.summaryText}>SEAT</Text>
-							<Text style={TicketBookingStyles.selectedSeats}>
+							{/* <Text style={TicketBookingStyles.selectedSeats}>
 								{ Array.from(selectedSeats).sort((a, b) => {
 									const [rowA, colA] = [a.charAt(0), parseInt(a.slice(1))];
 									const [rowB, colB] = [b.charAt(0), parseInt(b.slice(1))];
@@ -377,15 +377,30 @@ export default TicketBooking = () => {
 
 									return colA - colB;
 								}).join(', ')}
-							</Text>					
+							</Text>					 */}
+							<View style={TicketBookingStyles.selectedSeatsContainer}>
+								{Array.from(selectedSeats).sort((a, b) => {
+									const [rowA, colA] = [a.charAt(0), parseInt(a.slice(1))];
+									const [rowB, colB] = [b.charAt(0), parseInt(b.slice(1))];
+
+									if (rowA < rowB) return -1;
+									if (rowA > rowB) return 1;
+
+									return colA - colB;
+								}).map((seatId) => (
+									<View key={seatId} style={TicketBookingStyles.seatBox}>
+										<Text style={TicketBookingStyles.seatLabel}>{seatId}</Text>
+									</View>
+								))}
+							</View>
 						</View>
+
+						<View style={TicketBookingStyles.dividerLine}/>
 						<View style={TicketBookingStyles.summaryBox}>
-						<Text style={TicketBookingStyles.summaryText}>SUB-TOTAL</Text>
-						<Text style={TicketBookingStyles.subtotal}>₦ {(selectedSeats.size * seatPrice) || 0}</Text>
+							<Text style={TicketBookingStyles.summaryText}>SUB-TOTAL</Text>
+							<Text style={TicketBookingStyles.subtotal}>₦ {(selectedSeats.size * seatPrice) || 0}</Text>
 						</View>
 					</View>
-
-					
 				</>)}
 			</ScrollView>
 
@@ -429,7 +444,7 @@ const TicketBookingStyles = StyleSheet.create({
 	},
 	headerButton: {
 		position: 'absolute',
-		top: 30,
+		top: 40,
 		left: 15,
 		zIndex: 100,
 		height: 20,
@@ -440,7 +455,8 @@ const TicketBookingStyles = StyleSheet.create({
 		fontSize: 18, 
 		fontWeight: 'bold', 
 		textAlign: 'center',
-		paddingVertical: 15
+		paddingBottom: 15,
+		paddingTop: 25,
 	},
 	description: {
 		color: 'lightgray',
@@ -607,24 +623,54 @@ const TicketBookingStyles = StyleSheet.create({
 		textAlign: 'center'
 	},
 	bookingInfoContainer: {
-		backgroundColor: '#111',
+		backgroundColor: 'black',
+		flexDirection: 'row',
+		justifyContent: "space-around",
+		borderWidth: 0.5,
+		borderColor: 'white',
 		borderRadius: 8,
 		padding: 16,
 		marginTop: 16,
 		marginBottom: 40,
-		flexDirection: 'row',
-		justifyContent: 'space-between',
+		marginHorizontal: 50
 	},
-	summaryBox: {},
+	dividerLine: {
+		borderWidth: 0.5,
+		borderColor: 'white'
+	},
+	summaryBox: {
+		justifyContent: 'center'
+	},
 	summaryText: {
 		color: '#AAA', 
+		textAlign: 'center',
 		fontSize: 12
 	},
-	selectedSeats: {
-		color: 'white', 
-		marginTop: 4
+
+	selectedSeatsContainer: {
+		flexDirection: 'row',
+		flexWrap: 'wrap',
+		gap: 8,
+		marginTop: 10,
 	},
+	seatBox: {
+		paddingVertical: 5,
+		paddingHorizontal: 5,
+		borderWidth: 1,
+		borderColor: 'white',
+		borderRadius: 5,
+		alignItems: 'center',
+		justifyContent: 'center',
+	},
+	seatLabel: {
+		color: '#fff',
+		fontSize: 11,
+		fontWeight: 'bold',
+	},
+
+
 	subtotal: {
+		textAlign: 'center',
 		color: 'white',
 		marginTop: 4
 	},
