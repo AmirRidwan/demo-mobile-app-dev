@@ -1,0 +1,15 @@
+{
+    "Kuala Lumpur": ["Pavilion KL", "TRX Exchange", "Mid Valley", "Berjaya Times Square"],
+    "Selangor": ["IOI City Mall", "Sunway Pyramid", "1 Utama", "Setia City Mall"],
+    "Penang": ["Gurney Plaza", "Queensbay Mall", "Sunway Carnival"],
+    "Johor": ["Paradigm Mall JB", "Mid Valley Southkey", "KSL City Mall"],
+    "Sabah": ["Imago KK Times Square", "Suria Sabah", "Centre Point Sabah"],
+    "Sarawak": ["Vivacity Megamall", "The Spring Kuching", "Boulevard Miri"],
+    "Perak": ["Aeon Ipoh Station 18", "Ipoh Parade", "Mydin Meru Raya"],
+    "Negeri Sembilan": ["Palm Mall", "Seremban Gateway"],
+    "Melaka": ["Dataran Pahlawan", "AEON Bandaraya Melaka"],
+    "Pahang": ["East Coast Mall", "Berjaya Megamall"],
+    "Terengganu": ["Paya Bunga Square", "Mesra Mall"],
+    "Kelantan": ["KB Mall", "AEON Kota Bharu"],
+    "Perlis": ["Kayangan Square", "Perlis Mall"]
+}
