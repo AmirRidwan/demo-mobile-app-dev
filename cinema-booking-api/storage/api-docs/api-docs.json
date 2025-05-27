@@ -1,0 +1,415 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Cinema Booking API",
+        "description": "Swagger documentation for Cinema Booking API",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/bookings": {
+            "get": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Get all bookings",
+                "operationId": "4535e967ef15bc76dadf1efa40192f0d",
+                "responses": {
+                    "200": {
+                        "description": "List of bookings"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Create a new booking",
+                "operationId": "43e6dcca842886074084b8db86af7802",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "movie_id",
+                                    "showtime",
+                                    "seat_selection"
+                                ],
+                                "properties": {
+                                    "movie_id": {
+                                        "type": "string",
+                                        "format": "ulid"
+                                    },
+                                    "showtime": {
+                                        "type": "string",
+                                        "format": "date-time"
+                                    },
+                                    "seat_selection": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Booking created"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/bookings/{id}": {
+            "get": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Get a booking by ID",
+                "operationId": "c383a28985575aa1a16f783b2f762554",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Booking ID (ULID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "ulid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Booking details"
+                    },
+                    "404": {
+                        "description": "Booking not found"
+                    }
+                }
+            }
+        },
+        "/api/bookings/{id}/food-beverage": {
+            "post": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Add food and beverage to a booking",
+                "operationId": "893bbd9d9f8a5a26999ef51822d6224f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Booking ID (ULID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "ulid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "food_items"
+                                ],
+                                "properties": {
+                                    "food_items": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "id",
+                                                "quantity"
+                                            ],
+                                            "properties": {
+                                                "id": {
+                                                    "type": "string",
+                                                    "format": "ulid"
+                                                },
+                                                "quantity": {
+                                                    "type": "integer",
+                                                    "minimum": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Food added to booking"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/food-beverage-options": {
+            "get": {
+                "tags": [
+                    "Food & Beverages"
+                ],
+                "summary": "Get list of available food and beverage options",
+                "description": "Returns all food and beverage items that can be added to a booking",
+                "operationId": "158ceab90c2341f0a36a0c9bba602f19",
+                "responses": {
+                    "200": {
+                        "description": "List of food items",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "properties": {
+                                            "id": {
+                                                "type": "string",
+                                                "format": "ulid"
+                                            },
+                                            "name": {
+                                                "type": "string"
+                                            },
+                                            "price": {
+                                                "type": "number",
+                                                "format": "float"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/movies": {
+            "get": {
+                "tags": [
+                    "Movies"
+                ],
+                "summary": "List all movies",
+                "operationId": "f1b3cb64ae74885cdcf404eebe09485f",
+                "responses": {
+                    "200": {
+                        "description": "Success"
+                    }
+                }
+            }
+        },
+        "/api/movies/{id}": {
+            "get": {
+                "tags": [
+                    "Movies"
+                ],
+                "summary": "Get a movie by ID",
+                "operationId": "0665e4e5eeb4738291d9733b6015218b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "ulid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Movie found"
+                    },
+                    "404": {
+                        "description": "Not found"
+                    }
+                }
+            }
+        },
+        "/api/bookings/{id}/checkout": {
+            "post": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Get a booking summary before payment",
+                "description": "Returns movie title, seat selection, selected food, and total cost",
+                "operationId": "b6f2a2169e4d10e12c5bab7f6ef22341",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Booking ID (ULID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "ulid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Booking summary with total",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "booking_id": {
+                                            "type": "string",
+                                            "format": "ulid"
+                                        },
+                                        "movie": {
+                                            "type": "string"
+                                        },
+                                        "seats": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "food": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string"
+                                                    },
+                                                    "name": {
+                                                        "type": "string"
+                                                    },
+                                                    "price": {
+                                                        "type": "number",
+                                                        "format": "float"
+                                                    },
+                                                    "pivot": {
+                                                        "properties": {
+                                                            "quantity": {
+                                                                "type": "integer"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "number",
+                                            "format": "float"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Booking not found"
+                    }
+                }
+            }
+        },
+        "/api/bookings/{id}/confirm-payment": {
+            "post": {
+                "tags": [
+                    "Payments"
+                ],
+                "summary": "Confirm a booking and create a payment record",
+                "description": "Processes payment and updates booking status to confirmed",
+                "operationId": "4ece6ae6bc255772273ab874b7577152",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Booking ID (ULID)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "ulid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "payment_method"
+                                ],
+                                "properties": {
+                                    "payment_method": {
+                                        "type": "string",
+                                        "enum": [
+                                            "card",
+                                            "online_banking",
+                                            "ewallet"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Payment processed and booking confirmed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "amount": {
+                                            "type": "number",
+                                            "format": "float"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Booking not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Bookings",
+            "description": "Movie ticket booking operations"
+        },
+        {
+            "name": "Food & Beverages",
+            "description": "Endpoints to view available food and beverage items"
+        },
+        {
+            "name": "Movies",
+            "description": "API Endpoints for Movies"
+        },
+        {
+            "name": "Payments",
+            "description": "Endpoints for payment processing and booking confirmation"
+        }
+    ]
+}
