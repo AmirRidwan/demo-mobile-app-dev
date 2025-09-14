@@ -1,0 +1,66 @@
+[
+  {
+    "id": "popcorn",
+    "name": "Popcorn",
+    "price": 10.0,
+    "image": "https://raw.githubusercontent.com/AmirRidwan/cinema-mock-api/main/images/popcorn.png",
+    "description": "Classic buttery popcorn, perfect for movie time.",
+    "category": "Snack"
+  },
+  {
+    "id": "drink",
+    "name": "Soft Drink",
+    "price": 5.0,
+    "image": "https://raw.githubusercontent.com/AmirRidwan/cinema-mock-api/main/images/drink.png",
+    "description": "Refreshing carbonated soft drink in various flavors.",
+    "category": "Beverage"
+  },
+  {
+    "id": "combo",
+    "name": "Combo 1",
+    "price": 13.0,
+    "image": "https://raw.githubusercontent.com/AmirRidwan/cinema-mock-api/main/images/combo.png",
+    "description": "Popcorn and soft drink combo at a special price.",
+    "category": "Combo"
+  },
+  {
+    "id": "nachos",
+    "name": "Nachos",
+    "price": 12.0,
+    "image": "https://raw.githubusercontent.com/AmirRidwan/cinema-mock-api/main/images/nachos.png",
+    "description": "Crispy nachos with melted cheese and jalapenos.",
+    "category": "Snack"
+  },
+  {
+    "id": "chocolate",
+    "name": "Chocolate Bar",
+    "price": 6.0,
+    "image": "https://raw.githubusercontent.com/AmirRidwan/cinema-mock-api/main/images/chocolate.png",
+    "description": "Delicious milk chocolate bar for a sweet treat.",
+    "category": "Snack"
+  },
+  {
+    "id": "icecream",
+    "name": "Ice Cream",
+    "price": 8.0,
+    "image": "https://raw.githubusercontent.com/AmirRidwan/cinema-mock-api/main/images/icecream.png",
+    "description": "Creamy ice cream in various flavors.",
+    "category": "Snack"
+  },
+  {
+    "id": "hotdog",
+    "name": "Hotdog",
+    "price": 11.0,
+    "image": "https://raw.githubusercontent.com/AmirRidwan/cinema-mock-api/main/images/hotdog.png",
+    "description": "Grilled hotdog served with ketchup and mustard.",
+    "category": "Snack"
+  },
+  {
+    "id": "coffee",
+    "name": "Coffee",
+    "price": 7.0,
+    "image": "https://raw.githubusercontent.com/AmirRidwan/cinema-mock-api/main/images/coffee.png",
+    "description": "Hot brewed coffee to keep you awake during the movie.",
+    "category": "Beverage"
+  }
+]
