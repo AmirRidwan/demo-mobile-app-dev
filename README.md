@@ -10,8 +10,6 @@ This project demonstrates a full booking flow including select movie, seat locki
 ✨ Features
 ----------
 
--   🔐 Register & Login
-
 -   🏠 Main Screen with 4 tabs: Home, My Tickets, Favorites, Profile
 
 -   🎟️ Real-time Seat Selection
