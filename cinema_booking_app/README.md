@@ -1,5 +1,4 @@
-
-🎬 Cinema Booking App
+🎬 Demo Cinema Booking App by Amir Ridwan
 =====================
 
 A demo Flutter application for booking cinema tickets with **real-time seat selection** powered by WebSockets and a **Node.js backend**.  
@@ -149,7 +148,6 @@ Once the server is running, launch the app:
 * The WebSocket server will handle **live seat updates** in real time
 
 * * * * * 
-
 
 🛠️ Tech Stack
 --------------
