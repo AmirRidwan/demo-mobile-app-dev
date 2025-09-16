@@ -107,3 +107,51 @@ Once the server is running, launch the app and test **real-time seat selection**
 -   Flutter (UI, State Management with Provider)
 
 -   WebSocket (real-time seat updates)
+
+* * * * * 
+
+📸 Screenshots
+--------------
+
+### 🏠 Main Screen
+<p>
+  <img src="cinema_booking_app/assets/screenshots/home.png" width="250" alt="Home tab" />
+  <img src="cinema_booking_app/assets/screenshots/ticket.png" width="250" alt="Ticket tab" />
+  <img src="cinema_booking_app/assets/screenshots/ticket_tab.png" width="250" alt="Ticket tab" />
+  <img src="cinema_booking_app/assets/screenshots/favorite.png" width="250" alt="Favorite tab" />
+  <img src="cinema_booking_app/assets/screenshots/favorite_tab.png" width="250" alt="Favorite tab" />
+  <img src="cinema_booking_app/assets/screenshots/profile.png" width="250" alt="Profile tab" />
+</p>
+
+### 🎫 Movie Details
+<p>
+  <img src="cinema_booking_app/assets/screenshots/movie_detail.png" width="250" alt="Movie detail" />
+  <img src="cinema_booking_app/assets/screenshots/movie_detail_review.png" width="250" alt="Profile tab" />
+</p>
+
+### 🎟️ Ticket Booking
+<p>
+  <img src="cinema_booking_app/assets/screenshots/booking.png" width="250" alt="Ticket booking 1" />
+  <img src="cinema_booking_app/assets/screenshots/booking_filled.png" width="250" alt="Ticket booking 2" />
+  <img src="cinema_booking_app/assets/screenshots/booking_seat_selected.png" width="250" alt="Ticket booking 3" />
+  <img src="cinema_booking_app/assets/screenshots/booking_seat_unavailable.png" width="250" alt="Ticket booking 4" />
+</p>
+
+### 🍿 Food & Beverage
+<p>
+  <img src="cinema_booking_app/assets/screenshots/fnb_1.png" width="250" alt="Food & Beverage 1" />
+  <img src="cinema_booking_app/assets/screenshots/fnb_2.png" width="250" alt="Food & Beverage 2" />
+</p>
+
+### 📄 Booking Summary
+<img src="cinema_booking_app/assets/screenshots/booking_summary.png" width="250" alt="Booking Summary" />
+
+### 💳 Payment
+<p>
+  <img src="cinema_booking_app/assets/screenshots/payment_method.png" width="250" alt="Payment 1" />
+  <img src="cinema_booking_app/assets/screenshots/card_payment.png" width="250" alt="Payment 2" />
+  <img src="cinema_booking_app/assets/screenshots/bank_transfer.png" width="250" alt="Payment 3" />
+  <img src="cinema_booking_app/assets/screenshots/e_wallet.png" width="250" alt="Payment 4" />
+  <img src="cinema_booking_app/assets/screenshots/payment_success.png" width="250" alt="Payment sucess" />
+  <img src="cinema_booking_app/assets/screenshots/view_ticket.png" width="250" alt="View ticket" />
+</p>
