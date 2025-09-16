@@ -91,11 +91,11 @@ node server.js
 
 1.  Ensure the server URL matches your environment:
 
--   Android Emulator: `ws://10.0.2.2:8080`
+-   Android Emulator: `ws://10.0.2.2:3000`
 
--   Web/Desktop: `ws://localhost:8080`
+-   Web/Desktop: `ws://localhost:3000`
 
--   Real Device: `ws://<your-ip>:8080` (device must be on the same WiFi network)
+-   Real Device: `ws://<your-ip>:3000` (device must be on the same WiFi network)
 
 Once the server is running, launch the app and test **real-time seat selection**. The app will automatically connect and handle live updates.
 

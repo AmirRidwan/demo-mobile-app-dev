@@ -1,53 +1,28 @@
-const WebSocket = require("ws");
+const express = require("express");
+const http = require("http");
+const cors = require("cors");
+const initWebSocket = require("./src/ws/seatSocket");
 
-const wss = new WebSocket.Server({ port: 8080 });
+const app = express();
+const server = http.createServer(app);
 
-const seats = new Map();
+// Middlewares
+app.use(cors());
+app.use(express.json());
 
-wss.on("connection", (ws) => {
-  console.log("✅ Client connected");
+// Routes
+const moviesRoute = require("./src/routes/movies");
+const fnbRoute = require("./src/routes/fnb");
 
-  ws.on("message", (msg) => {
-    const message = msg.toString();
-    console.log("📥 Received:", message);
+app.use("/movies", moviesRoute);
+app.use("/fnb", fnbRoute);
 
-    if (message.startsWith("LOCK::")) {
-      // Format: LOCK::showtimeId::seatId
-      const [, showtimeId, seatId] = message.split("::");
-      if (!seats.has(showtimeId)) seats.set(showtimeId, new Set());
-      seats.get(showtimeId).add(seatId);
+// Init WebSocket
+initWebSocket(server);
 
-      broadcast(message);
-    } else if (message.startsWith("UNLOCK::")) {
-      // Format: UNLOCK::showtimeId::seatId
-      const [, showtimeId, seatId] = message.split("::");
-      if (seats.has(showtimeId)) {
-        seats.get(showtimeId).delete(seatId);
-      }
-
-      broadcast(message);
-    } else if (message.startsWith("STATE_REQUEST::")) {
-      // Format: STATE_REQUEST::showtimeId
-      const [, showtimeId] = message.split("::");
-      const lockedSeats = seats.has(showtimeId)
-        ? Array.from(seats.get(showtimeId))
-        : [];
-      const response = `STATE_RESPONSE::${showtimeId}::${lockedSeats.join(",")}`;
-
-      console.log("📤 Sending:", response);
-      ws.send(response);
-    }
-  });
-
-  ws.on("close", () => {
-    console.log("❌ Client disconnected");
-  });
+// Start Server
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => {
+  console.log(`🚀 REST API running at http://localhost:${PORT}`);
+  console.log(`🔌 WebSocket running at ws://localhost:${PORT}`);
 });
-
-function broadcast(message) {
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(message);
-    }
-  });
-}

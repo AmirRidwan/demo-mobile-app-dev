@@ -1,5 +1,4 @@
 import 'review.dart';
-import 'seat.dart';
 import 'showtime.dart';
 
 class Movie {
