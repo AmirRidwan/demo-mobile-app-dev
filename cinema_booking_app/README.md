@@ -50,7 +50,7 @@ This project demonstrates a complete booking flow:
 ### 1\. Ensure you are in the project folder
 
 ```
-cd cinema-booking-app
+cd cinema_booking_app
 
 ```
 
