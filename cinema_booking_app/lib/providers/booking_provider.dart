@@ -294,6 +294,22 @@ class BookingProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void cancelBookingSilently() {
+    if (_selectedShowtime == null) return;
+    final showtimeId = _selectedShowtime!.id;
+
+    final seatsToRelease = {...selectedSeatsForCurrent, ..._confirmedSeats};
+    for (final seatId in seatsToRelease) {
+      _releaseSeat(showtimeId, seatId);
+    }
+
+    _selectedSeats[showtimeId]?.clear();
+    _confirmedSeats.clear();
+
+    _selectedShowtime = null;
+    _selectedDate = null;
+  }
+
   void finalizeBooking() {
     if (_selectedShowtime == null) return;
     final showtimeId = _selectedShowtime!.id;

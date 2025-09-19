@@ -1,28 +1,26 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/movie.dart';
 import '../../providers/booking_provider.dart';
 import '../../providers/fnb_provider.dart';
 import '../../providers/movies_provider.dart';
-import '../../widgets/countdown_banner.dart';
-import 'payment_success_screen.dart';
 
 class EWalletScreen extends StatefulWidget {
   final DateTime expiryTime;
+  final VoidCallback onSuccess;
 
-  const EWalletScreen({super.key, required this.expiryTime});
+  const EWalletScreen({
+    super.key, 
+    required this.expiryTime,
+    required this.onSuccess,
+    });
 
   @override
   State<EWalletScreen> createState() => _EWalletScreenState();
 }
 
 class _EWalletScreenState extends State<EWalletScreen> {
-  Timer? _timer;
-  late DateTime _expiryTime;
-  int _remainingSeconds = 0;
   bool _isProcessing = false;
   String? _selectedWallet;
 
@@ -32,61 +30,6 @@ class _EWalletScreenState extends State<EWalletScreen> {
     'ShopeePay',
     'Boost',
   ];
-
-  @override
-  void initState() {
-    super.initState();
-    _expiryTime = widget.expiryTime;
-    _startTimer();
-  }
-
-  @override
-  void dispose() {
-    _cancelTimer();
-    super.dispose();
-  }
-
-  void _startTimer() {
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      final diff = _expiryTime.difference(DateTime.now()).inSeconds;
-      if (diff <= 0) {
-        timer.cancel();
-        _handleTimeout();
-      } else {
-        setState(() => _remainingSeconds = diff);
-      }
-    });
-  }
-
-  void _cancelTimer() {
-    _timer?.cancel();
-    _timer = null;
-  }
-
-  void _resetBookingAndReturnHome(String message) {
-    final booking = context.read<BookingProvider>();
-    final fnb = context.read<FnbProvider>();
-
-    booking.cancelBooking();
-    fnb.clearSelections();
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        Navigator.popUntil(context, (route) => route.isFirst);
-      }
-    });
-  }
-
-  void _handleTimeout() {
-    _resetBookingAndReturnHome("Session expired. Seats released.");
-  }
 
   Future<void> _processPayment() async {
     if (_selectedWallet == null) {
@@ -99,13 +42,9 @@ class _EWalletScreenState extends State<EWalletScreen> {
     setState(() => _isProcessing = true);
     await Future.delayed(const Duration(seconds: 2));
 
-    if (!mounted) return;
-
     final booking = context.read<BookingProvider>();
     final fnb = context.read<FnbProvider>();
     final movies = context.read<MoviesProvider>().movies;
-
-    _cancelTimer();
 
     Movie? movie;
     if (movies.isNotEmpty) {
@@ -121,11 +60,7 @@ class _EWalletScreenState extends State<EWalletScreen> {
 
     fnb.clearSelections();
 
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const PaymentSuccessScreen()),
-      (route) => route.isFirst,
-    );
+    widget.onSuccess();
   }
 
   Widget _buildWalletOption(String wallet) {
@@ -157,16 +92,8 @@ class _EWalletScreenState extends State<EWalletScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("E-Wallet Payment"),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
       body: Column(
         children: [
-          CountdownBanner(remainingSeconds: _remainingSeconds),
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),

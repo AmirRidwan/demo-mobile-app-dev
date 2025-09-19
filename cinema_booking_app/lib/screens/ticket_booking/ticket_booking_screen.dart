@@ -26,6 +26,7 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
   DateTime? _selectedDate;
   String? _selectedTime;
   Set<String> _selectedHallTypes = {};
+  BookingProvider? _bookingProvider;
 
   final int rows = 8;
   final int cols = 10;
@@ -37,8 +38,14 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _bookingProvider = context.read<BookingProvider>();
+  }
+
+  @override
   void dispose() {
-    context.read<BookingProvider>().cancelBooking();
+    _bookingProvider?.cancelBookingSilently();
     super.dispose();
   }
 

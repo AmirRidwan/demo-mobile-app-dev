@@ -13,7 +13,6 @@ import 'screens/movie_detail/movie_detail_screen.dart';
 import 'screens/booking_summary/booking_summary_screen.dart';
 import 'screens/food_beverage/food_beverage_screen.dart';
 import 'screens/ticket_booking/ticket_booking_screen.dart';
-import 'screens/payment/payment_screen.dart';
 import 'screens/payment/payment_success_screen.dart';
 
 Future<void> main() async {
@@ -66,18 +65,6 @@ class _CinemaAppState extends State<CinemaApp> {
           BookingSummaryScreen.routeName: (_) => const BookingSummaryScreen(),
           PaymentSuccessScreen.routeName: (_) => const PaymentSuccessScreen(),
           TicketTab.routeName: (_) => const TicketTab(),
-        },
-        onGenerateRoute: (settings) {
-          if (settings.name == PaymentScreen.routeName) {
-            final args = settings.arguments as Map<String, dynamic>?;
-            final remainingSeconds = args?['remainingSeconds'] as int? ?? 0;
-
-            return MaterialPageRoute(
-              builder: (_) => PaymentScreen(remainingSeconds: remainingSeconds),
-              settings: settings,
-            );
-          }
-          return null;
         },
       ),
     );
