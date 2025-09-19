@@ -44,7 +44,7 @@ class BookingProvider extends ChangeNotifier {
   final Map<String, Map<String, dynamic>> _menu = {};
 
   // Constants
-  static const int _holdDurationSeconds = 480;
+  static const int _holdDurationSeconds = 60;
 
   // WebSocket
   final SeatService seatService;

@@ -10,9 +10,9 @@ import '../../widgets/countdown_banner.dart';
 import 'payment_success_screen.dart';
 
 class CardPaymentScreen extends StatefulWidget {
-  final int initialRemainingSeconds;
+  final DateTime expiryTime;
 
-  const CardPaymentScreen({super.key, required this.initialRemainingSeconds});
+  const CardPaymentScreen({super.key, required this.expiryTime});
 
   @override
   State<CardPaymentScreen> createState() => _CardPaymentScreenState();
@@ -20,7 +20,8 @@ class CardPaymentScreen extends StatefulWidget {
 
 class _CardPaymentScreenState extends State<CardPaymentScreen> {
   Timer? _timer;
-  late int _remainingSeconds;
+  late DateTime _expiryTime;
+  int _remainingSeconds = 0;
   bool _isProcessing = false;
 
   final _formKey = GlobalKey<FormState>();
@@ -31,7 +32,7 @@ class _CardPaymentScreenState extends State<CardPaymentScreen> {
   @override
   void initState() {
     super.initState();
-    _remainingSeconds = widget.initialRemainingSeconds;
+    _expiryTime = widget.expiryTime;
     _startTimer();
 
     _expiryController.addListener(() {
@@ -54,19 +55,16 @@ class _CardPaymentScreenState extends State<CardPaymentScreen> {
   void _startTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-
-      if (_remainingSeconds <= 1) {
+      final diff = _expiryTime.difference(DateTime.now()).inSeconds;
+      if (diff <= 0) {
         timer.cancel();
         _handleTimeout();
       } else {
-        setState(() => _remainingSeconds--);
+        setState(() => _remainingSeconds = diff);
       }
     });
   }
+
 
   void _cancelTimer() {
     _timer?.cancel();

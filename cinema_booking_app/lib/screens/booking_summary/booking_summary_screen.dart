@@ -22,7 +22,8 @@ class BookingSummaryScreen extends StatefulWidget {
 
 class _BookingSummaryScreenState extends State<BookingSummaryScreen> {
   Timer? _timer;
-  late int _remainingSeconds;
+  late DateTime _expiryTime;
+  int _remainingSeconds = 0;
 
   @override
   void initState() {
@@ -44,23 +45,28 @@ class _BookingSummaryScreenState extends State<BookingSummaryScreen> {
       return;
     }
 
-    _remainingSeconds = booking.holdDurationSeconds;
+    _expiryTime = DateTime.now().add(
+      Duration(seconds: booking.holdDurationSeconds),
+    );
+
     _startTimer();
   }
 
   void _startTimer() {
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_remainingSeconds <= 1) {
-        timer.cancel();
-        _handleTimeout();
-      } else {
-        if (mounted) {
-          setState(() => _remainingSeconds--);
-        }
+  _timer?.cancel();
+  _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+    final diff = _expiryTime.difference(DateTime.now()).inSeconds;
+    if (diff <= 0) {
+      timer.cancel();
+      if (!mounted) return;
+      _handleTimeout();
+    } else {
+      if (mounted) {
+        setState(() => _remainingSeconds = diff);
       }
-    });
-  }
+    }
+  });
+}
 
   void _cancelTimer() {
     _timer?.cancel();
@@ -125,11 +131,12 @@ class _BookingSummaryScreenState extends State<BookingSummaryScreen> {
     Navigator.push<int>(
       context,
       MaterialPageRoute(
-        builder: (_) => PaymentScreen(remainingSeconds: _remainingSeconds),
+        builder: (_) => PaymentScreen(
+          remainingSeconds: _expiryTime.difference(DateTime.now()).inSeconds,
+        ),
       ),
-    ).then((returnedSeconds) {
+    ).then((_) {
       if (!mounted) return;
-      if (returnedSeconds != null) _remainingSeconds = returnedSeconds;
       _startTimer();
     });
   }

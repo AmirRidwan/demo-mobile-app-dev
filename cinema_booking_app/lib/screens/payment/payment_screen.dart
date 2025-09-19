@@ -21,23 +21,29 @@ class PaymentScreen extends StatefulWidget {
 
 class _PaymentScreenState extends State<PaymentScreen> {
   Timer? _timer;
-  late int _remainingSeconds;
+  late DateTime _expiryTime;
+  int _remainingSeconds = 0;
 
   @override
   void initState() {
     super.initState();
-    _remainingSeconds = widget.remainingSeconds;
+    _expiryTime = DateTime.now().add(
+      Duration(seconds: widget.remainingSeconds),
+    );
     _startTimer();
   }
 
   void _startTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_remainingSeconds <= 1) {
+      final diff = _expiryTime.difference(DateTime.now()).inSeconds;
+      if (diff <= 0) {
         timer.cancel();
         _handleTimeout();
       } else {
-        setState(() => _remainingSeconds--);
+        if (mounted) {
+          setState(() => _remainingSeconds = diff);
+        }
       }
     });
   }
@@ -153,18 +159,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           title: const Text("Credit / Debit Card"),
                           onTap: () {
                             _cancelTimer();
-                            Navigator.push<int>(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => CardPaymentScreen(
-                                  initialRemainingSeconds: _remainingSeconds,
-                                ),
+                                builder: (_) => CardPaymentScreen(expiryTime: _expiryTime),
                               ),
-                            ).then((returnedSeconds) {
+                            ).then((_) {
                               if (!mounted) return;
-                              if (returnedSeconds != null) {
-                                _remainingSeconds = returnedSeconds;
-                              }
                               _startTimer();
                             });
                           },
@@ -176,18 +177,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           title: const Text("Bank Transfer"),
                           onTap: () {
                             _cancelTimer();
-                            Navigator.push<int>(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => BankTransferScreen(
-                                  initialRemainingSeconds: _remainingSeconds,
-                                ),
+                                builder: (_) => BankTransferScreen(expiryTime: _expiryTime),
                               ),
-                            ).then((returnedSeconds) {
+                            ).then((_) {
                               if (!mounted) return;
-                              if (returnedSeconds != null) {
-                                _remainingSeconds = returnedSeconds;
-                              }
                               _startTimer();
                             });
                           },
@@ -199,18 +195,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
                           title: const Text("E-Wallet"),
                           onTap: () {
                             _cancelTimer();
-                            Navigator.push<int>(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => EWalletScreen(
-                                  initialRemainingSeconds: _remainingSeconds,
-                                ),
+                                builder: (_) => EWalletScreen(expiryTime: _expiryTime),
                               ),
-                            ).then((returnedSeconds) {
+                            ).then((_) {
                               if (!mounted) return;
-                              if (returnedSeconds != null) {
-                                _remainingSeconds = returnedSeconds;
-                              }
                               _startTimer();
                             });
                           },

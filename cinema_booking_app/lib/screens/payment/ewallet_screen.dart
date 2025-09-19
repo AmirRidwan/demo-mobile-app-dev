@@ -11,9 +11,9 @@ import '../../widgets/countdown_banner.dart';
 import 'payment_success_screen.dart';
 
 class EWalletScreen extends StatefulWidget {
-  final int initialRemainingSeconds;
+  final DateTime expiryTime;
 
-  const EWalletScreen({super.key, required this.initialRemainingSeconds});
+  const EWalletScreen({super.key, required this.expiryTime});
 
   @override
   State<EWalletScreen> createState() => _EWalletScreenState();
@@ -21,7 +21,8 @@ class EWalletScreen extends StatefulWidget {
 
 class _EWalletScreenState extends State<EWalletScreen> {
   Timer? _timer;
-  late int _remainingSeconds;
+  late DateTime _expiryTime;
+  int _remainingSeconds = 0;
   bool _isProcessing = false;
   String? _selectedWallet;
 
@@ -35,7 +36,7 @@ class _EWalletScreenState extends State<EWalletScreen> {
   @override
   void initState() {
     super.initState();
-    _remainingSeconds = widget.initialRemainingSeconds;
+    _expiryTime = widget.expiryTime;
     _startTimer();
   }
 
@@ -48,16 +49,12 @@ class _EWalletScreenState extends State<EWalletScreen> {
   void _startTimer() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-
-      if (_remainingSeconds <= 1) {
+      final diff = _expiryTime.difference(DateTime.now()).inSeconds;
+      if (diff <= 0) {
         timer.cancel();
         _handleTimeout();
       } else {
-        setState(() => _remainingSeconds--);
+        setState(() => _remainingSeconds = diff);
       }
     });
   }
