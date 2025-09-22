@@ -28,7 +28,6 @@ class _MovieTrailerSectionState extends State<MovieTrailerSection> {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final videoId = YoutubePlayerController.convertUrlToId(
       widget.movie.trailerUrl ?? '',
     );

@@ -1,3 +1,4 @@
+import 'package:cinema_booking_app/providers/fnb_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -26,7 +27,6 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
   DateTime? _selectedDate;
   String? _selectedTime;
   Set<String> _selectedHallTypes = {};
-  BookingProvider? _bookingProvider;
 
   final int rows = 8;
   final int cols = 10;
@@ -38,14 +38,7 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _bookingProvider = context.read<BookingProvider>();
-  }
-
-  @override
   void dispose() {
-    _bookingProvider?.cancelBookingSilently();
     super.dispose();
   }
 
@@ -53,9 +46,9 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final booking = context.watch<BookingProvider>();
+    final fnb = context.watch<FnbProvider>();
 
     final movieId = ModalRoute.of(context)!.settings.arguments as int;
     final movie = context.watch<MoviesProvider>().movies.firstWhere(
@@ -81,128 +74,147 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
                     _selectedHallTypes.contains(s.hallType));
           }).toList();
 
-    return Scaffold(
-      appBar: AppBar(title: const Text("Ticket Booking")),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text("Select cinema and showtime", style: textTheme.titleMedium),
-          const SizedBox(height: 16),
-
-          // Location
-          LocationSelector(
-            locations: availableLocations,
-            selectedLocation: _selectedLocation,
-            onChanged: (val) {
-              setState(() {
-                _selectedLocation = val;
-                _selectedTime = null;
-                _selectedHallTypes.clear();
-                booking.cancelBooking();
-              });
-            },
-          ),
-          const SizedBox(height: 24),
-
-          // Date Selector
-          DateSelector(
-            selectedDate: _selectedDate,
-            onDateSelected: (date) {
-              setState(() {
-                _selectedDate = date;
-                _selectedTime = null;
-                _selectedHallTypes.clear();
-                booking.cancelBooking();
-              });
-            },
-          ),
-          const SizedBox(height: 24),
-
-          // Hall Types
-          HallTypeSelector(
-            hallTypes: availableHallTypes,
-            selectedHallTypes: _selectedHallTypes,
-            onChanged: (ht, selected) {
-              setState(() {
-                if (selected) {
-                  _selectedHallTypes.add(ht);
-                } else {
-                  _selectedHallTypes.remove(ht);
-                }
-                _selectedTime = null;
-                booking.cancelBooking();
-              });
-            },
-          ),
-          const SizedBox(height: 24),
-
-          // Times
-          TimeSelector(
-            filteredShowtimes: filteredShowtimes,
-            selectedTime: _selectedTime,
-            onSelected: (label, selectedShowtime) {
-              setState(() => _selectedTime = label);
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (bool didPop, Object? result) {
+        if (didPop) {
+          booking.cancelBooking();
+          fnb.clearSelections();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Ticket Booking"),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () {
               booking.cancelBooking();
-              booking.selectShowtime(
-                showtime: selectedShowtime,
-                date: _selectedDate!,
-              );
+              fnb.clearSelections();
+              Navigator.pop(context);
             },
           ),
-          const SizedBox(height: 24),
-
-          // Seats
-          if (_selectedLocation != null &&
-              _selectedDate != null &&
-              _selectedTime != null) ...[
-            SeatGrid(rows: rows, cols: cols),
-            const SizedBox(height: 24),
-          ],
-        ],
-      ),
-
-      // Bottom
-      bottomNavigationBar: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        ),
+        body: ListView(
+          padding: const EdgeInsets.all(16),
           children: [
-            if (booking.selectedSeats.isNotEmpty)
-              BookingSummary(booking: booking),
-
-            TwoButton(
-              leftText: "Cancel",
-              rightText: "Proceed",
-              onLeftPressed: () {
-                booking.cancelBooking();
-                Navigator.pop(context);
+            Text("Select cinema and showtime", style: textTheme.titleMedium),
+            const SizedBox(height: 16),
+      
+            // Location
+            LocationSelector(
+              locations: availableLocations,
+              selectedLocation: _selectedLocation,
+              onChanged: (val) {
+                setState(() {
+                  _selectedLocation = val;
+                  _selectedTime = null;
+                  _selectedHallTypes.clear();
+                  booking.cancelBooking();
+                });
               },
-              onRightPressed:
-                  (_selectedLocation == null ||
-                      _selectedDate == null ||
-                      _selectedTime == null ||
-                      booking.selectedSeats.isEmpty)
-                  ? null
-                  : () {
-                      final selectedShowtime = movie.showtimes.firstWhere(
-                        (s) =>
-                            s.location == _selectedLocation &&
-                            s.date == _dateKey(_selectedDate!) &&
-                            "${s.time} • ${s.hallType}" == _selectedTime,
-                      );
-
-                      booking.selectShowtime(
-                        showtime: selectedShowtime,
-                        date: _selectedDate!,
-                      );
-
-                      Navigator.pushNamed(
-                        context,
-                        FoodBeverageScreen.routeName,
-                        arguments: movie.id,
-                      );
-                    },
             ),
+            const SizedBox(height: 24),
+      
+            // Date Selector
+            DateSelector(
+              selectedDate: _selectedDate,
+              onDateSelected: (date) {
+                setState(() {
+                  _selectedDate = date;
+                  _selectedTime = null;
+                  _selectedHallTypes.clear();
+                  booking.cancelBooking();
+                });
+              },
+            ),
+            const SizedBox(height: 24),
+      
+            // Hall Types
+            HallTypeSelector(
+              hallTypes: availableHallTypes,
+              selectedHallTypes: _selectedHallTypes,
+              onChanged: (ht, selected) {
+                setState(() {
+                  if (selected) {
+                    _selectedHallTypes.add(ht);
+                  } else {
+                    _selectedHallTypes.remove(ht);
+                  }
+                  _selectedTime = null;
+                  booking.cancelBooking();
+                });
+              },
+            ),
+            const SizedBox(height: 24),
+      
+            // Times
+            TimeSelector(
+              filteredShowtimes: filteredShowtimes,
+              selectedTime: _selectedTime,
+              onSelected: (label, selectedShowtime) {
+                setState(() => _selectedTime = label);
+                booking.cancelBooking();
+                booking.selectShowtime(
+                  showtime: selectedShowtime,
+                  date: _selectedDate!,
+                );
+              },
+            ),
+            const SizedBox(height: 24),
+      
+            // Seats
+            if (_selectedLocation != null &&
+                _selectedDate != null &&
+                _selectedTime != null) ...[
+              SeatGrid(rows: rows, cols: cols),
+              const SizedBox(height: 24),
+            ],
           ],
+        ),
+      
+        // Bottom
+        bottomNavigationBar: SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (booking.selectedSeats.isNotEmpty)
+                BookingSummary(booking: booking),
+      
+              TwoButton(
+                leftText: "Cancel",
+                rightText: "Proceed",
+                onLeftPressed: () {
+                  booking.cancelBooking();
+                  Navigator.pop(context);
+                },
+                onRightPressed:
+                    (_selectedLocation == null ||
+                        _selectedDate == null ||
+                        _selectedTime == null ||
+                        booking.selectedSeats.isEmpty)
+                    ? null
+                    : () {
+                        final selectedShowtime = movie.showtimes.firstWhere(
+                          (s) =>
+                              s.location == _selectedLocation &&
+                              s.date == _dateKey(_selectedDate!) &&
+                              "${s.time} • ${s.hallType}" == _selectedTime,
+                        );
+      
+                        booking.selectShowtime(
+                          showtime: selectedShowtime,
+                          date: _selectedDate!,
+                        );
+      
+                        Navigator.pushNamed(
+                          context,
+                          FoodBeverageScreen.routeName,
+                          arguments: movie.id,
+                        );
+                      },
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -39,7 +39,10 @@ class _MainScreenState extends State<MainScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_titles[_selectedIndex])),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        title: Text(_titles[_selectedIndex])
+        ),
       body: _screens[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,

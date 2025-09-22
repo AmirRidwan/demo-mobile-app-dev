@@ -37,27 +37,27 @@ class _BookingSummaryScreenState extends State<BookingSummaryScreen> {
   }
 
   Future<void> _initBooking() async {
-  final booking = context.read<BookingProvider>();
+    final booking = context.read<BookingProvider>();
 
-  if (!booking.hasActiveLock) {
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    messenger?.showSnackBar(
-      const SnackBar(content: Text("No active seat lock. Please reselect.")),
+    if (!booking.hasActiveLock) {
+      final messenger = ScaffoldMessenger.maybeOf(context);
+      messenger?.showSnackBar(
+        const SnackBar(content: Text("No active seat lock. Please reselect.")),
+      );
+      Navigator.pop(context);
+      return;
+    }
+
+    _expiryTime = DateTime.now().add(
+      Duration(seconds: booking.holdDurationSeconds),
     );
-    Navigator.pop(context);
-    return;
+
+    setState(() {
+      _remainingSeconds = _expiryTime.difference(DateTime.now()).inSeconds;
+    });
+
+    _startTimer();
   }
-
-  _expiryTime = DateTime.now().add(
-    Duration(seconds: booking.holdDurationSeconds),
-  );
-
-  setState(() {
-    _remainingSeconds = _expiryTime.difference(DateTime.now()).inSeconds;
-  });
-
-  _startTimer();
-}
 
   void _startTimer() {
     _timer?.cancel();
@@ -127,8 +127,10 @@ class _BookingSummaryScreenState extends State<BookingSummaryScreen> {
   }
 
   void _goToSuccess() {
+    _cancelTimer();
     setState(() => _step = BookingStep.success);
   }
+
 
   @override
   void dispose() {
@@ -204,24 +206,16 @@ class _BookingSummaryScreenState extends State<BookingSummaryScreen> {
       },
       child: Scaffold(
         backgroundColor: scheme.surface,
-        appBar: _step == BookingStep.payment
-            ? null
-            : AppBar(
-                title: Text(
-                  _step == BookingStep.summary ? "Booking Summary" : "Success",
-                ),
+        appBar: (_step == BookingStep.summary)
+            ? AppBar(
+                title: const Text("Booking Summary"),
                 centerTitle: true,
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back),
-                  onPressed: () {
-                    if (_step == BookingStep.success) {
-                      Navigator.popUntil(context, (route) => route.isFirst);
-                    } else {
-                      _confirmAndCancel();
-                    }
-                  },
+                  onPressed: _confirmAndCancel,
                 ),
-              ),
+              )
+            : null,
         body: body,
       ),
     );
