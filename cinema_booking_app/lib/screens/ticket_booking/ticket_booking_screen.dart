@@ -55,10 +55,10 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
       (m) => m.id == movieId,
     );
 
-    final availableLocations = movie.showtimes
-        .map((s) => s.location)
-        .toSet()
-        .toList();
+    final availableLocations =
+        movie.showtimes.map((s) => s.location).toSet().toList()
+          ..sort((a, b) => a.compareTo(b));
+
     final availableHallTypes = movie.showtimes
         .map((s) => s.hallType)
         .toSet()
@@ -66,13 +66,25 @@ class _TicketBookingScreenState extends State<TicketBookingScreen> {
 
     final filteredShowtimes =
         (_selectedLocation == null || _selectedDate == null)
-        ? <dynamic>[]
-        : movie.showtimes.where((s) {
-            return s.location == _selectedLocation &&
-                s.date == _dateKey(_selectedDate!) &&
-                (_selectedHallTypes.isEmpty ||
-                    _selectedHallTypes.contains(s.hallType));
-          }).toList();
+              ? <dynamic>[]
+              : movie.showtimes.where((s) {
+                  final showDateTime = DateTime.parse("${s.date} ${s.time}");
+
+                  final cutoff = DateTime.now().add(
+                    const Duration(minutes: 30),
+                  );
+
+                  return s.location == _selectedLocation &&
+                      s.date == _dateKey(_selectedDate!) &&
+                      (_selectedHallTypes.isEmpty ||
+                          _selectedHallTypes.contains(s.hallType)) &&
+                      showDateTime.isAfter(cutoff);
+                }).toList()
+          ..sort((a, b) {
+            final dtA = DateTime.parse("${a.date} ${a.time}");
+            final dtB = DateTime.parse("${b.date} ${b.time}");
+            return dtA.compareTo(dtB);
+          });
 
     return PopScope(
       canPop: true,

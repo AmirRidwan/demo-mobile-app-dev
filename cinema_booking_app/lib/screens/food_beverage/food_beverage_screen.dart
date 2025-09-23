@@ -6,6 +6,7 @@ import '../booking_summary/booking_summary_screen.dart';
 import '../../widgets/food_beverage/fnb_tab_bar.dart';
 import '../../widgets/food_beverage/fnb_tab_bar_view.dart';
 import '../../widgets/food_beverage/fnb_summary_bar.dart';
+import '../ticket_booking/ticket_booking_screen.dart';
 
 class FoodBeverageScreen extends StatefulWidget {
   static const routeName = '/fnb';
@@ -64,14 +65,22 @@ class _FoodBeverageScreenState extends State<FoodBeverageScreen>
       if (!mounted) return;
       showDialog(
         context: context,
-        builder: (_) => AlertDialog(
+        builder: (ctx) => AlertDialog(
           title: const Text("Seat Unavailable"),
           content: const Text(
             "Some of your selected seats are no longer available.\n\nPlease go back and choose other seats.",
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                Navigator.pop(ctx);
+                if (mounted) {
+                  Navigator.popUntil(
+                    context,
+                    ModalRoute.withName(TicketBookingScreen.routeName),
+                  );
+                }
+              },
               child: const Text("OK"),
             ),
           ],
